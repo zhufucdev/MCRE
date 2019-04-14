@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools" android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+    <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/padding_normal"
+            android:id="@+id/outer_card">
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:id="@+id/layout_pack_basic_info"
+                            android:layout_toEndOf="@id/img_pack_icon"
+                            android:padding="@dimen/padding_normal">
+                <View android:layout_height="60dp" android:layout_width="0dp"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                              tools:ignore="HardcodedText"
+                              android:orientation="vertical"
+                              android:layout_centerVertical="true"
+                              android:paddingBottom="2dp"
+                              android:layout_toStartOf="@id/btn_pack_expand">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                              android:text="Example Pack Name"
+                              android:id="@+id/text_pack_name"
+                              android:textColor="@android:color/black"
+                              android:textSize="@dimen/text_normal"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                              android:text="Example Pack Description"
+                              android:id="@+id/text_pack_description"/>
+                </LinearLayout>
+                <androidx.appcompat.widget.AppCompatImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btn_pack_expand"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:srcCompat="@drawable/ic_expand_more_black"/>
+            </RelativeLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="72dp"
+                          android:id="@+id/layout_pack_actions"
+                          android:orientation="horizontal"
+                          android:background="@color/colorAccentLight"
+                          android:gravity="center"
+                          android:paddingStart="72dp"
+                          android:paddingEnd="@dimen/padding_normal">
+                <androidx.appcompat.widget.AppCompatButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="?android:attr/borderlessButtonStyle"
+                        android:text="@string/action_delete"
+                        android:drawableTop="@drawable/ic_delete_accent"
+                        android:textColor="@color/colorAccent"
+                        android:id="@+id/btn_action_delete"/>
+            </LinearLayout>
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:adjustViewBounds="true"
+                    android:layout_marginEnd="@dimen/padding_normal"
+                    app:srcCompat="@drawable/ic_block_grey"
+                    android:id="@+id/img_pack_icon"
+                    android:layout_margin="@dimen/padding_normal"/>
+
+            <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                                               android:layout_height="wrap_content"
+                                               android:layout_below="@id/layout_pack_basic_info"
+                                               android:id="@+id/group_info"
+                                               android:layout_marginStart="@dimen/padding_normal"
+                                               android:layout_marginEnd="@dimen/padding_normal"
+                                               app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                              android:padding="@dimen/padding_normal"
+                              android:orientation="vertical"
+                              android:background="@color/colorAccentLight">
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                  android:orientation="horizontal">
+                        <androidx.appcompat.widget.AppCompatImageView android:layout_width="wrap_content"
+                                                                      android:layout_height="19dp"
+                                                                      app:srcCompat="@drawable/ic_folder_black"
+                                                                      android:tint="@color/colorAccent"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                  android:text="@string/info_size"
+                                  android:id="@+id/text_pack_size"
+                                  android:textColor="@color/colorAccent"/>
+                    </LinearLayout>
+
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                  android:orientation="horizontal">
+                        <androidx.appcompat.widget.AppCompatImageView android:layout_width="wrap_content"
+                                                                      android:layout_height="19dp"
+                                                                      app:srcCompat="@drawable/ic_error_black"
+                                                                      android:tint="@color/colorAccent"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                  android:text="@string/info_pack_version"
+                                  android:id="@+id/text_info_pack_version"
+                                  android:textColor="@color/colorAccent"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

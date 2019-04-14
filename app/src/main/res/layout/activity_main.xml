@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:id="@+id/main_root">
+
+    <com.google.android.material.appbar.AppBarLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:theme="@style/AppTheme.AppBarOverlay">
+        <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+        <androidx.cardview.widget.CardView android:layout_width="match_parent"
+                                           android:layout_height="wrap_content"
+                                           android:id="@+id/card_root_path">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                          android:orientation="horizontal"
+                          android:padding="@dimen/padding_normal">
+                <TextView android:layout_width="0dp"
+                          android:layout_weight="11"
+                          android:layout_height="wrap_content"
+                          android:text="@string/root_path_located"
+                          android:textColor="@android:color/black"
+                          android:id="@+id/text_root_path"/>
+                <FrameLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent">
+                    <ImageView android:layout_width="match_parent"
+                               android:layout_height="match_parent"
+                               android:src="@drawable/ic_chevron_right_black"
+                               android:id="@+id/btn_searched"
+                               android:contentDescription="@string/description_searched_path"/>
+                    <ProgressBar android:layout_width="match_parent" android:layout_height="match_parent"
+                                 android:id="@+id/progress_searching"
+                                 android:visibility="gone"/>
+                </FrameLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include layout="@layout/content_main"/>
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/main_app_bar"
+            android:layout_gravity="bottom"
+            app:navigationIcon="@drawable/ic_menu_white"
+            app:hideOnScroll="true"
+            style="@style/Widget.MaterialComponents.BottomAppBar.Colored">
+    </com.google.android.material.bottomappbar.BottomAppBar>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_anchor="@id/main_app_bar"
+            android:src="@drawable/ic_add_white"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
