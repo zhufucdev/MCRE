@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:id="@+id/layout_extends"
+              android:background="@android:color/white">
+    <androidx.cardview.widget.CardView android:layout_width="0dp"
+                                       android:layout_weight="1"
+                                       android:layout_height="wrap_content"
+                                       android:layout_margin="@dimen/padding_normal"
+                                       android:id="@+id/extend_card_back">
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:orientation="horizontal"
+                      android:layout_margin="@dimen/padding_normal">
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/extend_card_back_icon"
+                    android:adjustViewBounds="true"
+                    app:srcCompat="@drawable/ic_arrow_back"
+                    app:tint="@color/colorAccent"
+                    android:layout_gravity="center"/>
+
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:layout_marginStart="@dimen/padding_normal"
+                      android:gravity="center_vertical"
+                      android:text="@string/action_back"
+                      android:textColor="@android:color/black"
+                      android:textSize="16sp"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <androidx.cardview.widget.CardView android:layout_width="0dp"
+                                       android:layout_weight="1"
+                                       android:layout_height="wrap_content"
+                                       android:layout_margin="@dimen/padding_normal"
+                                       android:id="@+id/extend_card_new_project">
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:orientation="horizontal"
+                      android:layout_margin="@dimen/padding_normal">
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/extend_card_new_project_icon"
+                    android:adjustViewBounds="true"
+                    app:srcCompat="@drawable/ic_add_white"
+                    app:tint="@color/colorAccent"
+                    android:layout_gravity="center"/>
+
+            <TextView android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:layout_marginStart="@dimen/padding_normal"
+                      android:gravity="center_vertical"
+                      android:text="@string/action_new_project"
+                      android:textColor="@android:color/black"
+                      android:textSize="16sp"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

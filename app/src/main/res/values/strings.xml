@@ -23,4 +23,10 @@
     <string name="info_task_finishing">Finishing Reaming Tasks</string>
     <string name="info_cleaning_up">Cleaning up…</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_select_all">Select All</string>
+    <string name="action_select_inverse">Inverse Select</string>
+    <string name="action_back">Back</string>
+    <string name="action_new_project">New Project</string>
+    <string name="title_detail">Detail Activity</string>
 </resources>

@@ -2,7 +2,7 @@ package com.zhufucdev.mcre.pack
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
-import com.zhufucdev.mcre.Environment
+import com.zhufucdev.mcre.Env
 import com.zhufucdev.mcre.pack.ResourcesPack.Type.*
 import com.zhufucdev.mcre.utility.DataUnit
 import java.io.File
@@ -14,7 +14,7 @@ abstract class ResourcesPack internal constructor(val root: File) {
     abstract val icon: File
     lateinit var header: ManifestHeader
     private var mSize = DataUnit.from(BigInteger.valueOf(-1))
-    fun calcSize(): DataUnit = Environment.formatedSize(root).apply { mSize = this }
+    fun calcSize(): DataUnit = Env.formatedSize(root).apply { mSize = this }
     val size get() = if (mSize.byte == BigInteger.valueOf(-1)) calcSize() else mSize
 
     enum class Type {

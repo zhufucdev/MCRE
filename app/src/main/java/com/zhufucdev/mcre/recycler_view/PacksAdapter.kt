@@ -1,7 +1,6 @@
 package com.zhufucdev.mcre.recycler_view
 
 import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -9,6 +8,7 @@ import android.os.Build
 import android.os.Handler
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -17,24 +17,27 @@ import androidx.cardview.widget.CardView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.zhufucdev.mcre.Environment
+import com.zhufucdev.mcre.Env
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.pack.BedrockPack
 import com.zhufucdev.mcre.pack.ResourcesPack
 import com.zhufucdev.mcre.pack.ResourcesPack.Type.*
+import com.zhufucdev.mcre.utility.measure
+import com.zhufucdev.mcre.utility.setCardOnClickListenerWithPosition
+import com.zhufucdev.mcre.views.SelectableIconView
 import kotlinx.android.synthetic.main.recycler_pack_holder.view.*
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
-    class PackHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val icon = itemView.findViewById<AppCompatImageView>(R.id.img_pack_icon)!!
+    class PackHolder(itemView: View) : SelectableCardHolder(itemView) {
+        val icon = itemView.findViewById<SelectableIconView>(R.id.img_pack_icon)!!
         val name = itemView.findViewById<TextView>(R.id.text_pack_name)!!
         val description = itemView.findViewById<TextView>(R.id.text_pack_description)!!
         val buttonExpand = itemView.findViewById<AppCompatImageView>(R.id.btn_pack_expand)!!
-        val infoGroup = itemView.findViewById<CardView>(R.id.group_info)!!
+        val infoGroup = itemView.findViewById<FrameLayout>(R.id.layout_info)!!
         val actionGroup = itemView.findViewById<LinearLayout>(R.id.layout_pack_actions)!!
-        val card = itemView.findViewById<CardView>(R.id.outer_card)!!.also { defaultElevation = it.cardElevation }
+        override val card = itemView.findViewById<CardView>(R.id.outer_card)!!
 
         fun expendInfo() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -94,13 +97,14 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
             }
         }
 
-        val isCardSelected get() = card.cardBackgroundColor.defaultColor == card.context.resources.getColor(R.color.colorAccentLight)
-        fun selectCard() {
-            card.setCardBackgroundColor(card.context.resources.getColor(R.color.colorAccentLight))
+        override fun selectCard() {
+            icon.select()
+            super.selectCard()
         }
 
-        fun unselectCard() {
-            card.setCardBackgroundColor(card.context.resources.getColor(android.R.color.white))
+        override fun unselectCard() {
+            icon.unselect()
+            super.unselectCard()
         }
 
         val isActionGroupShown get() = actionGroup.isVisible
@@ -114,11 +118,14 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
             ).apply {
                 duration = 170
                 doOnEnd {
-                    unselectCard()
+                    if (isCardSelected)
+                        unselectCard()
                 }
                 start()
             }
+            buttonExpand.isEnabled = false
         }
+
         fun hideActions(x: Int, y: Int) {
             ViewAnimationUtils.createCircularReveal(
                 actionGroup,
@@ -133,22 +140,24 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
                 }
                 start()
             }
+            buttonExpand.isEnabled = true
         }
+
+        fun hideActions() = hideActions(actionGroup.width / 2, actionGroup.height / 2)
 
         companion object {
             var targetHeight = 0
-            var defaultElevation = 0f
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PackHolder =
         PackHolder(LayoutInflater.from(parent.context).inflate(R.layout.recycler_pack_holder, parent, false))
 
-    override fun getItemCount(): Int = Environment.packs.size
+    override fun getItemCount(): Int = Env.packs.size
 
-    private var onCardClickListener: ((Int) -> Unit)? = null
+    private var onCardClickListener: ((Int) -> Boolean)? = null
     private var onCardLongClickListener: ((Int) -> Unit)? = null
-    fun setOnCardClickListener(l: (Int) -> Unit) {
+    fun setOnCardClickListener(l: (Int) -> Boolean) {
         onCardClickListener = l
     }
 
@@ -160,7 +169,7 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
         holder.apply {
             if (item.icon.exists()) {
                 icon.setImageBitmap(
-                    Environment.threadPool.submit<Bitmap> { BitmapFactory.decodeStream(item.icon.inputStream()) }[5, TimeUnit.SECONDS]
+                    Env.threadPool.submit<Bitmap> { BitmapFactory.decodeStream(item.icon.inputStream()) }[5, TimeUnit.SECONDS]
                 )
             } else {
                 icon.setImageResource(R.drawable.ic_block_grey)
@@ -185,14 +194,14 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
                 buttonExpand.isEnabled = false
                 if (PackHolder.targetHeight == 0) {
                     //=> Measure the card's size
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED).let { infoGroup.measure(it, it) }
+                    infoGroup.measure()
                     PackHolder.targetHeight = infoGroup.measuredHeight
                 }
                 //=> Animator
                 buttonExpand.pivotX = buttonExpand.width / 2f
                 buttonExpand.pivotY = buttonExpand.height / 2f
                 if (infoGroup.visibility == View.GONE) {
-                    //==> Calac data
+                    //==> Calculate data
                     val size = infoGroup.findViewById<TextView>(R.id.text_pack_size)
                     size.setText(R.string.info_calculating)
                     val handler = Handler {
@@ -207,7 +216,7 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
                             else -> false
                         }
                     }
-                    Environment.threadPool.execute {
+                    Env.threadPool.execute {
                         item.calcSize()
                         handler.sendEmptyMessage(0)
                     }
@@ -231,7 +240,7 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
                     tooltipText = context.getText(R.string.action_delete)
                 }
                 setOnClickListener {
-                    Environment.Packs.remove(file)
+                    Env.Packs.remove(file)
                 }
             }
             icon.setImageResource(R.drawable.ic_block_grey)
@@ -241,77 +250,42 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initActions(holder: PackHolder, editable: Boolean, file: File, order: Int) {
-
         holder.apply {
-
             actionGroup.visibility = View.INVISIBLE
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED).let { actionGroup.measure(it, it) }
+
             var isExpend = false
-            var isUp = false
-            var isLongClick = false
-            card.setOnTouchListener { _, event ->
-                fun startElevationAnimation(a: ValueAnimator) {
-                    a.apply {
-                        duration = 150
-                        addUpdateListener {
-                            card.cardElevation = animatedValue as Float
-                        }
-                        start()
-                    }
-                }
-
-                val maxElevation = card.resources.getDimension(R.dimen.padding_normal)
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    startElevationAnimation(ObjectAnimator.ofFloat(PackHolder.defaultElevation, maxElevation))
-                    Handler().postDelayed({
-                        if (!isUp) {
-                            isLongClick = true
-                            //On Long Click
-                            onCardLongClickListener?.invoke(order)
-
-                            if (actionGroup.isVisible)
-                                return@postDelayed
-                            if (!isCardSelected)
-                                selectCard()
-                            else
-                                unselectCard()
-                        } else {
-                            isUp = false
-                        }
-                    }, 300)
-                } else if (event.action == MotionEvent.ACTION_UP) {
-                    isUp = true
-                    startElevationAnimation(ObjectAnimator.ofFloat(maxElevation, PackHolder.defaultElevation))
-                    if (!isLongClick) {
-                        //On Click
-                        onCardClickListener?.invoke(order)
-
-                        if (!actionGroup.isVisible) {
+            card.setOnClickListener { /*Doing Nothing*/ }
+            card.setCardOnClickListenerWithPosition({ x, y ->
+                if (onCardClickListener?.invoke(order) != false) {
+                    if (!isActionGroupShown) {
+                        if (!isCardSelected) {
                             isExpend = infoGroup.isVisible
                             if (isExpend) buttonExpand.performClick()
-                            showActions(event.x.toInt(),event.y.toInt())
+                            showActions(x.toInt(), y.toInt())
                             actionGroup.visibility = View.VISIBLE
-
                         } else {
-                            hideActions(event.x.toInt(), event.y.toInt())
-                            if (isExpend) buttonExpand.performClick()
+                            unselectCard()
                         }
                     } else {
-                        isLongClick = false
-                        isUp = false
+                        hideActions(x.toInt(), y.toInt())
+                        if (isExpend) buttonExpand.performClick()
                     }
                 }
-
-                true
+            } , { _,_ ->
+               onCardLongClickListener?.invoke(order)
+            })
+            icon.setOnClickListener {
+                onCardLongClickListener?.invoke(order)
             }
             actionGroup.btn_action_delete.setOnClickListener {
-                Environment.Packs.remove(file)
+                Env.Packs.remove(file)
             }
         }
     }
 
     override fun onBindViewHolder(holder: PackHolder, position: Int) {
-        val item = Environment.packs[position]
+        val item = Env.packs[position]
         if (item.type == Bedrock || item.type == JavaVersion) {
             forPack(holder, item.instance!!)
             initActions(holder, true, item.file, position)
