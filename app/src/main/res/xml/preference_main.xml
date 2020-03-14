@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
+    <Preference android:title="@string/preference_general"
+                android:icon="@drawable/ic_settings_on_surface"
+                android:key="general"/>
+    <Preference android:title="@string/preference_appearance"
+                android:icon="@drawable/ic_color_lens_black"
+                android:key="appearance"/>
+</PreferenceScreen>

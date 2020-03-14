@@ -1,53 +1,49 @@
-package com.zhufucdev.mcre
+package com.zhufucdev.mcre.fragment
 
 import android.animation.ObjectAnimator
+import android.app.ActivityOptions
+import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.animation.doOnEnd
-import androidx.core.view.isVisible
+import androidx.core.view.forEach
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
+import com.zhufucdev.mcre.Processes
+import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.activity.MainActivity
+import com.zhufucdev.mcre.activity.ProjectActivity
 import com.zhufucdev.mcre.recycler_view.FileAdapter
 import com.zhufucdev.mcre.utility.Logger
 import com.zhufucdev.mcre.utility.forEachHolder
 import com.zhufucdev.mcre.utility.measure
 import kotlinx.android.synthetic.main.fragment_file.*
+import java.io.File
 import kotlin.reflect.jvm.jvmName
 
 class FileFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
         inflater.inflate(R.layout.fragment_file, container, false)
 
-    val adapter = FileAdapter()
-    private val signEmptyPackItems by lazy { (activity as MainActivity).mainFragment.view?.findViewById<LinearLayout>(R.id.sign_empty_pack_items) }
-    private val topCard by lazy { activity?.findViewById<LinearLayout>(R.id.card_top_root) }
-    val handler = Handler {
-        when (it.what) {
-            0 -> {
-                if (adapter.itemCount == 0)
-                    signEmptyPackItems?.isVisible = true
-                else {
-                    signEmptyPackItems?.isVisible = false
-                    recycler_file.isVisible = true
-                }
-                true
-            }
-            else -> false
-        }
+    lateinit var adapter: FileAdapter
+    private val signEmptyPackItems by lazy {
+        (activity as MainActivity).managerFragment.view?.findViewById<LinearLayout>(
+            R.id.sign_empty_pack_items
+        )
     }
+    private val topCard by lazy { activity?.findViewById<LinearLayout>(R.id.card_top_root) }
 
     private fun extendCards(disableBack: Boolean): View =
         LayoutInflater.from(context).inflate(R.layout.recycler_file_extends, topCard, false).apply {
             adapter.giveUpperLevelListenersTo(findViewById(R.id.extend_card_back), disableBack)
+            adapter.giveAltButtonListenerTo(findViewById(R.id.extend_card_new_project))
             if (disableBack) {
                 findViewById<AppCompatImageView>(R.id.extend_card_back_icon).imageTintList =
                     resources.getColorStateList(android.R.color.darker_gray)
@@ -55,18 +51,20 @@ class FileFragment : Fragment() {
         }
 
     private var isExtendCardsAdded = false
-    val nestedScrollView by lazy { recycler_file.parent as NestedScrollView }
+    val nestedScrollView by lazy { file_recycler_view.parent as NestedScrollView }
     private fun isOverflow(scrollY: Int) =
-        scrollY >= resources.getDimensionPixelSize(R.dimen.padding_big) + resources.getDimensionPixelSize(R.dimen.padding_normal) * 3
+        scrollY >= resources.getDimensionPixelSize(R.dimen.padding_big) + resources.getDimensionPixelSize(
+            R.dimen.padding_normal
+        ) * 3
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        recycler_file.apply {
-            visibility = View.INVISIBLE
+        adapter = FileAdapter(showing)
+        file_recycler_view.apply {
             adapter = this@FileFragment.adapter
             layoutManager = GridLayoutManager(context, 2)
         }
-        Logger.info(Processes.Debug, recycler_file::class.jvmName)
+        Logger.info(Processes.Debug, file_recycler_view::class.jvmName)
 
         nestedScrollView.setOnScrollChangeListener { _: NestedScrollView?, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int ->
             val overflow = isOverflow(scrollY)
@@ -83,29 +81,39 @@ class FileFragment : Fragment() {
             }
         }
 
-        var hasDrawn = false
-        adapter.setOnDrawnListener {
-            if (!hasDrawn)
-                handler.sendEmptyMessage(0)
-            hasDrawn = true
-        }
         adapter.setOnItemClickListener {
-            recycler_file.forEachHolder<FileAdapter.FileHolder> { holder ->
+            file_recycler_view.forEachHolder<FileAdapter.FileHolder> { holder ->
                 if (holder.layoutPosition != it) {
                     holder.unselectCard()
                 }
             }
         }
+
+        adapter.setOnAltButtonClickListener {
+            startActivity(
+                Intent(context, ProjectActivity::class.java),
+                ActivityOptions.makeSceneTransitionAnimation(
+                    activity,
+                    if (!isExtendCardsAdded) adapter.newProjectCard
+                    else topCard?.findViewById<View>(R.id.extend_card_new_project),
+                    "shared"
+                ).toBundle()
+            )
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        Logger.info(Processes.Debug, "FileFragment.onStart")
         if (isOverflow(nestedScrollView.scrollY) && !isExtendCardsAdded) addExtendCards()
     }
 
     fun removeExtendCards() {
+        adapter.newProjectCard?.transitionName = "shared"
         val view = topCard?.findViewById<LinearLayout>(R.id.layout_extends) ?: return
+        topCard!!.forEach {
+            if (it.id == R.id.layout_extends && it != view)
+                topCard!!.removeView(it)
+        }
         val begin = view.let {
             it.measure()
             it.measuredHeight
@@ -126,7 +134,11 @@ class FileFragment : Fragment() {
     }
 
     fun addExtendCards() {
+        if (isExtendCardsAdded) return
+        isExtendCardsAdded = true
         val view = extendCards(disableBack = adapter.root == Environment.getExternalStorageDirectory())
+        adapter.newProjectCard?.transitionName = null
+        view.findViewById<View>(R.id.extend_card_new_project).transitionName = "shared"
         topCard?.addView(view)
         val final = view.let {
             it.measure()
@@ -141,6 +153,9 @@ class FileFragment : Fragment() {
             duration = 300
             start()
         }
-        isExtendCardsAdded = true
+    }
+
+    companion object {
+        var showing: File = Environment.getExternalStorageDirectory()
     }
 }

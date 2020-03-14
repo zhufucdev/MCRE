@@ -4,4 +4,24 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorAccentLight">#F8BBD0</color>
+    <color name="colorOnToolbar">#616161</color>
+
+    <!-- Minecraft Standard Foreground Text Color -->
+    <color name="mcBlack">#000000</color>
+    <color name="mcDarkBlue">#0000AA</color>
+    <color name="mcDarkGreen">#00AA00</color>
+    <color name="mcDarkAqua">#00AAAA</color>
+    <color name="mcDarkRed">#AA0000</color>
+    <color name="mcDarkPurple">#AA00AA</color>
+    <color name="mcGold">#FFAA00</color>
+    <color name="mcGray">#AAAAAA</color>
+    <color name="mcDarkGray">#555555</color>
+    <color name="mcBlue">#5555FF</color>
+    <color name="mcGreen">#55FF55</color>
+    <color name="mcAqua">#55FFFF</color>
+    <color name="mcRed">#FF5555</color>
+    <color name="mcLightPurple">#FF55FF</color>
+    <color name="mcYellow">#FFFF55</color>
+    <color name="mcWhite">#FFFFFF</color>
+    <color name="mcWhiteBackground">#3F3F3F</color>
 </resources>

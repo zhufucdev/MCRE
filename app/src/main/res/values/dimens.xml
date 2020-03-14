@@ -2,5 +2,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="padding_normal">6dp</dimen>
     <dimen name="padding_big">16dp</dimen>
-    <dimen name="text_normal" tools:ignore="PxUsage">54px</dimen>
+    <dimen name="text_title">26sp</dimen>
+    <dimen name="text_small">20sp</dimen>
 </resources>

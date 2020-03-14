@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/project_root"
+        tools:context=".activity.ProjectActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:theme="@style/AppTheme.AppBarOverlay"
+            android:background="?attr/colorPrimary">
+
+        <androidx.cardview.widget.CardView
+                android:layout_width="match_parent" android:layout_height="54dp"
+                android:layout_marginStart="@dimen/padding_big"
+                android:layout_marginEnd="@dimen/padding_big"
+                android:layout_marginTop="@dimen/padding_normal"
+                android:layout_marginBottom="@dimen/padding_normal"
+                app:cardCornerRadius="3dp"
+                android:transitionName="shared">
+            <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:navigationIcon="@drawable/ic_search_on_toolbar"
+                    app:title="@string/action_search"
+                    app:titleTextColor="@color/colorOnToolbar"
+                    app:popupTheme="@style/AppTheme.PopupOverlay"
+                    app:menu="@menu/menu_project_toolbar"/>
+        </androidx.cardview.widget.CardView>
+        <com.google.android.material.tabs.TabLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tab_layout"
+                app:tabGravity="fill"
+                app:tabInlineLabel="true"
+                app:tabMode="fixed"
+                style="@style/Widget.MaterialComponents.TabLayout.Colored"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include layout="@layout/content_project"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

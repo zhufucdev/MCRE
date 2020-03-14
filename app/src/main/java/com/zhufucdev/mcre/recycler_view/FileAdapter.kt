@@ -11,16 +11,22 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateMargins
 import androidx.recyclerview.widget.RecyclerView
 import com.zhufucdev.mcre.R
+import com.zhufucdev.mcre.exception.SharedStorageNotAvailableException
+import com.zhufucdev.mcre.fragment.FileFragment
 import com.zhufucdev.mcre.utility.setCardOnClickListenerWithPosition
-import com.zhufucdev.mcre.views.SelectableIconView
+import com.zhufucdev.mcre.view.SelectableIconView
 import java.io.File
 
-class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
+class FileAdapter(
+    var root: File,
+    private val useAltButton: Boolean = true,
+    private val altButtonText: Int = R.string.action_new_project
+) :
     RecyclerView.Adapter<FileAdapter.FileHolder>() {
     class FileHolder(itemView: View) : SelectableCardHolder(itemView) {
-        val icon = itemView.findViewById<SelectableIconView>(R.id.img_file_type)
-        val name = itemView.findViewById<TextView>(R.id.text_file_name)
-        override val card = itemView.findViewById<CardView>(R.id.card_file)
+        val icon = itemView.findViewById<SelectableIconView>(R.id.img_file_type)!!
+        val name = itemView.findViewById<TextView>(R.id.text_file_name)!!
+        override val card = itemView.findViewById<CardView>(R.id.card_file)!!
         fun directory() {
             (name.parent as LinearLayout).orientation = LinearLayout.HORIZONTAL
             icon.apply {
@@ -33,6 +39,7 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
         }
 
         fun file(type: String) {
+            card.isVisible = true
             (name.parent as LinearLayout).orientation = LinearLayout.VERTICAL
             icon.apply {
                 layoutParams = LinearLayout.LayoutParams(
@@ -51,9 +58,10 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
             }
         }
 
-        fun upperLevel(disable: Boolean = false) {
+        private fun standActionButton(disable: Boolean, icon1: Int, text: Int) {
+            card.isVisible = true
             (name.parent as LinearLayout).orientation = LinearLayout.HORIZONTAL
-            icon.apply {
+            this.icon.apply {
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -61,21 +69,16 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
                 if (disable) {
                     imageTintList = context.resources.getColorStateList(android.R.color.darker_gray)
                 }
-                rebuildImageResource(R.drawable.ic_arrow_back)
+                rebuildImageResource(icon1)
             }
-            name.setText(R.string.action_back)
+            name.setText(text)
+        }
+        fun upperLevel(disable: Boolean = false) {
+            standActionButton(disable, R.drawable.ic_arrow_back, R.string.action_back)
         }
 
-        fun newProject() {
-            (name.parent as LinearLayout).orientation = LinearLayout.HORIZONTAL
-            icon.apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                rebuildImageResource(R.drawable.ic_add_white)
-            }
-            name.setText(R.string.action_new_project)
+        fun altButton(disable: Boolean = false, text: Int) {
+            standActionButton(disable, R.drawable.ic_add_white, text)
         }
 
         override fun selectCard() {
@@ -109,25 +112,21 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
         return@let directories
     }
 
-    private var list = files() ?: listOf<File>()
+    private var list = files() ?: throw SharedStorageNotAvailableException()
 
     fun refresh() {
         files()?.apply { list = this }
         selectedFile = null
         notifyDataSetChanged()
+        FileFragment.showing = root
     }
 
     var selectedFile: File? = null
         private set
 
     // Listeners
-    private var onDrawnListener: (() -> Unit)? = null
-
-    fun setOnDrawnListener(l: () -> Unit) {
-        onDrawnListener = l
-    }
-
     private var onItemClickListener: ((Int) -> Unit)? = null
+
     fun setOnItemClickListener(l: (Int) -> Unit) {
         onItemClickListener = l
     }
@@ -137,18 +136,30 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
         onDirectoryChangedListener = l
     }
 
+    private var onNewProjectCreatedListener: (() -> Unit)? = null
+    fun setOnAltButtonClickListener(l: () -> Unit) {
+        onNewProjectCreatedListener = l
+    }
+
     // UI
     fun giveUpperLevelListenersTo(card: CardView, disable: Boolean) =
-        card.setCardOnClickListenerWithPosition(onCardClickListener = if (!disable) { _, _ ->
-            root = root.parentFile
+        card.setCardOnClickListenerWithPosition(onCardClickListener = (if (!disable) { _, _ ->
+            root = root.parentFile!!
             refresh()
             onDirectoryChangedListener?.invoke()
-        } else null as ((Float, Float) -> Unit)?) // This cast is USEFUL
+        } else null) as ((Float, Float) -> Unit)?) // This cast is USEFUL
+
+    private fun giveAltButtonListenerTo(card: CardView) = card.setCardOnClickListenerWithPosition({ _, _ ->
+        onNewProjectCreatedListener?.invoke()
+    })
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileHolder =
         FileHolder(LayoutInflater.from(parent.context).inflate(R.layout.recycler_file_holder, parent, false))
 
     override fun getItemCount(): Int = list.size + 2
+    var newProjectCard: CardView? = null
+        private set
+
     override fun onBindViewHolder(holder: FileHolder, position: Int) {
         if (position <= 1) {
             when (position) {
@@ -160,7 +171,10 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
                     }
                 }
                 1 -> {
-                    holder.newProject()
+                    holder.altButton(!useAltButton, altButtonText)
+                    newProjectCard = holder.card
+                    holder.card.transitionName = "shared"
+                    giveAltButtonListenerTo(holder.card)
                 }
             }
         } else {
@@ -170,17 +184,18 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
                     card.isVisible = false
                     directory()
                 } else {
+                    unselectCard()
                     card.isVisible = true
-                    name.text = if (!item.isHidden) item.nameWithoutExtension else item.name
+                    name.text = item.name
                     if (item.isDirectory) {
                         directory()
                         fun notifySelect() {
-                            if (selectedFile == item) {
+                            selectedFile = if (selectedFile == item) {
                                 unselectCard()
-                                selectedFile = null
+                                null
                             } else {
                                 selectCard()
-                                selectedFile = item
+                                item
                             }
                             onItemClickListener?.invoke(position)
                         }
@@ -206,21 +221,24 @@ class FileAdapter(var root: File = Environment.getExternalStorageDirectory()) :
                         })
                     } else {
                         file(item.extension)
-                        card.setCardOnClickListenerWithPosition({ _, _ ->
-                            if (selectedFile == item) {
+                        fun notifySelect() {
+                            selectedFile = if (selectedFile == item) {
                                 unselectCard()
-                                selectedFile = null
+                                null
                             } else {
                                 selectCard()
-                                selectedFile = item
+                                item
                             }
                             onItemClickListener?.invoke(position)
+                        }
+                        card.setCardOnClickListenerWithPosition({ _, _ ->
+                            notifySelect()
                         })
+                        icon.setOnClickListener {
+                            notifySelect()
+                        }
                     }
                 }
-            }
-            if (position == itemCount - 1) {
-                onDrawnListener?.invoke()
             }
         }
     }

@@ -2,21 +2,26 @@ package com.zhufucdev.mcre.utility
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.app.Service
+import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AlphaAnimation
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.ActionMenuView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomappbar.BottomAppBar
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.zhufucdev.mcre.Processes
 import com.zhufucdev.mcre.R
+import com.zhufucdev.mcre.project_edit.Name
+import kotlin.concurrent.thread
 import kotlin.math.absoluteValue
 
 inline fun <T : RecyclerView.ViewHolder> RecyclerView.forEachHolder(l: (T) -> Unit) =
@@ -152,14 +157,16 @@ fun View.setOnClickListenerWithPosition(
                 if (!isUp) {
                     isLongClick = true
                     //On Long Click
-                    onCardLongClickListener?.invoke(event.x, event.y)
-                    (context.getSystemService(Service.VIBRATOR_SERVICE) as Vibrator).apply {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            vibrate(
-                                VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE)
-                            )
-                        } else {
-                            vibrate(10)
+                    if (onCardLongClickListener != null) {
+                        onCardLongClickListener.invoke(event.x, event.y)
+                        (context.getSystemService(Service.VIBRATOR_SERVICE) as Vibrator).apply {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                vibrate(
+                                    VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE)
+                                )
+                            } else {
+                                vibrate(10)
+                            }
                         }
                     }
                 } else {
@@ -208,4 +215,24 @@ fun View.setHorizantalSwipeListener(l: (Float, SwipeDirection) -> Unit) {
             else -> false
         }
     }
+}
+
+inline fun FloatingActionButton.hideThen(crossinline action: FloatingActionButton.() -> Unit) {
+    hide(object : FloatingActionButton.OnVisibilityChangedListener() {
+        override fun onHidden(fab: FloatingActionButton?) {
+            action.invoke(this@hideThen)
+        }
+    })
+}
+
+fun View.hideSoftKeyboard() {
+    val manager = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    manager.hideSoftInputFromWindow(windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+}
+
+fun String.nameify() = Name(this)
+fun Int.nameify() = Name(this)
+
+fun alert(error: Exception) {
+    thread(name = "virtual") { throw error }
 }

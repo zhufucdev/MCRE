@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools" android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="@dimen/padding_normal"
+              tools:ignore="HardcodedText"
+              android:background="?attr/selectableItemBackground">
+    <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
+                 android:background="@drawable/shape_round">
+        <com.zhufucdev.mcre.view.SelectableIconView
+                android:layout_margin="@dimen/padding_normal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/icon"
+                app:srcCompat="@drawable/ic_block_grey"
+                app:tint="@android:color/white"/>
+    </FrameLayout>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/padding_normal">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_small"
+                android:textColor="?attr/colorOnSurface"
+                android:text="Example Text"
+                android:id="@+id/text_title"/>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="example text"
+                android:id="@+id/text_subtitle"/>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/settings_nav.xml" app:startDestination="@id/mainFragment">
+
+    <fragment android:id="@+id/mainFragment" android:name="com.zhufucdev.mcre.settings.MainFragment"
+              android:label="MainFragment">
+        <action android:id="@+id/action_mainFragment_to_appearanceFragment" app:destination="@id/appearanceFragment"
+                app:enterAnim="@anim/fragment_fade_enter"
+                app:exitAnim="@anim/fragment_fade_exit"
+                app:popEnterAnim="@anim/fragment_fade_enter"
+                app:popExitAnim="@anim/fragment_fade_exit"/>
+        <action android:id="@+id/action_mainFragment_to_generalFragment" app:destination="@id/generalFragment"
+                app:enterAnim="@anim/fragment_fade_enter"
+                app:exitAnim="@anim/fragment_fade_exit"
+                app:popEnterAnim="@anim/fragment_fade_enter"
+                app:popExitAnim="@anim/fragment_fade_exit"/>
+    </fragment>
+    <fragment android:id="@+id/appearanceFragment" android:name="com.zhufucdev.mcre.settings.AppearanceFragment"
+              android:label="AppearanceFragment"/>
+    <fragment android:id="@+id/generalFragment" android:name="com.zhufucdev.mcre.settings.GeneralFragment"
+              android:label="GeneralFragment"/>
+</navigation>

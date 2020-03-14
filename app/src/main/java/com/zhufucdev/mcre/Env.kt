@@ -1,11 +1,15 @@
 package com.zhufucdev.mcre
 
 import android.Manifest
+import android.app.ActivityManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Environment
 import android.util.SparseArray
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.util.forEach
+import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.JsonObject
@@ -17,27 +21,41 @@ import com.zhufucdev.mcre.utility.DataUnit
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.math.BigInteger
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 
 object Env {
-    var threadPool = Executors.newCachedThreadPool()!!
+    var threadPool = Executors.newCachedThreadPool()
 
     val packs = ArrayList<PackWrapper>()
 
-    val isPermissionsAllGranted get() = ContextCompat.checkSelfPermission(presentActivity,Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    val permissions
+        get() = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+    val isPermissionsAllGranted
+        get() = permissions.all {
+            ContextCompat.checkSelfPermission(
+                presentActivity,
+                it
+            ) == PackageManager.PERMISSION_GRANTED
+        }
 
     object Packs {
         fun remove(file: File) {
             remove(listOf(file))
         }
 
+        @Suppress("UNCHECKED_CAST")
         fun remove(files: List<File>) {
             if (files.isEmpty()) throw IllegalArgumentException("files must not be empty.")
 
-            fun refreshList() {
-                if (presentActivity is MainActivity) (presentActivity as MainActivity).mainFragment.handler.sendEmptyMessage(if (packs.isEmpty()) 0 else 1)
+            fun refreshList(oldList: List<PackWrapper>) {
+                if (presentActivity is MainActivity) (presentActivity as MainActivity).managerFragment.listPacks(oldList)
             }
 
             val todo = TODO.new(Processes.PackDeleting, R.string.info_cleaning_up) {
@@ -46,6 +64,7 @@ object Env {
             }
             todo.obj = files
             val recover = TreeMap<File, Int>()
+            val old = files.map { ResourcesPack.from(it) }
             files.forEach {
                 val pos = packs.indexOfFirst { pack -> pack.file == it }
                 recover[it] = pos
@@ -70,11 +89,12 @@ object Env {
                     ),
                     Snackbar.LENGTH_LONG
                 ).setAction(R.string.action_undo) {
+                    val old = packs.clone() as List<PackWrapper>
                     recover.forEach { entry ->
                         packs.add(entry.value, ResourcesPack.from(entry.key))
                     }
                     todo.clear()
-                    refreshList()
+                    refreshList(old)
                 }.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
                     override fun onDismissed(transientBottomBar: Snackbar, event: Int) {
                         if (event != DISMISS_EVENT_ACTION && !todo.inProcess) {
@@ -85,7 +105,7 @@ object Env {
                     }
                 })
             }
-            refreshList()
+            refreshList(old)
         }
     }
 
@@ -154,7 +174,7 @@ object Env {
             if (file.isFile) {
                 r = r.plus(file.length().toBigInteger())
             } else {
-                file.listFiles().forEach {
+                file.listFiles()?.forEach {
                     r = r.plus(fileSize(it))
                 }
             }
@@ -163,4 +183,22 @@ object Env {
             0.toBigInteger()
         }
     }
+
+    fun applyPreference(context: Context) {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        preferences.all["night_mode"]?.let { v ->
+            AppCompatDelegate.setDefaultNightMode(
+                if (v as Boolean) AppCompatDelegate.MODE_NIGHT_YES
+                else AppCompatDelegate.MODE_NIGHT_NO
+            )
+        }
+        packsRoot = File(
+            preferences.getString(
+                "pack_root",
+                File(Environment.getExternalStorageDirectory(), "games/com.mojang/resource_packs").absolutePath
+            )!!
+        )
+    }
+
+    fun formatDate(date: Date) = DateFormat.getDateTimeInstance().format(date)!!
 }

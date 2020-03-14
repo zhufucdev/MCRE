@@ -1,37 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:dist="http://schemas.android.com/apk/distribution"
+          xmlns:tools="http://schemas.android.com/tools"
           package="com.zhufucdev.mcre">
 
     <dist:module dist:instant="true"/>
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
+            android:requestLegacyExternalStorage="true"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            tools:targetApi="q">
         <activity
-                android:name=".activity.DetailActivity"
-                android:label="@string/title_detail"
-                android:parentActivityName=".activity.MainActivity"
-                android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="com.zhufucdev.mcre.activity.MainActivity"/>
+                android:name=".activity.SettingsActivity"
+                android:label="@string/title_activity_settings"
+                android:theme="@style/AppTheme">
         </activity>
+        <activity
+                android:name=".activity.ProjectActivity"
+                android:theme="@style/AppTheme.NoActionBar"/>
         <activity
                 android:name=".activity.MainActivity"
                 android:label="@string/app_name"
                 android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <action android:name="android.intent.action.VIEW">MCRE</action>
+                <action android:name="android.intent.action.VIEW">
+                </action>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>

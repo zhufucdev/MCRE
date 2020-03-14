@@ -23,7 +23,11 @@ object Logger {
     }
 
     fun error(process: Processes,t: Any, e: Exception) {
-        Log.e(e::class.simpleName!!, t.toString(), e)
+        Log.e(process.name, t.toString(), e)
         logs.add(LogR(Type.Error, process, t.toString(), e))
+    }
+
+    fun debug(msg: String) {
+        Log.d(Processes.Debug.name, msg)
     }
 }

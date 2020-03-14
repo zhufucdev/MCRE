@@ -2,8 +2,6 @@ package com.zhufucdev.mcre.recycler_view
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Handler
 import android.view.*
@@ -16,18 +14,20 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.cardview.widget.CardView
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.zhufucdev.mcre.Env
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.pack.BedrockPack
+import com.zhufucdev.mcre.pack.PackWrapper
 import com.zhufucdev.mcre.pack.ResourcesPack
 import com.zhufucdev.mcre.pack.ResourcesPack.Type.*
+import com.zhufucdev.mcre.utility.MCTextRender
 import com.zhufucdev.mcre.utility.measure
 import com.zhufucdev.mcre.utility.setCardOnClickListenerWithPosition
-import com.zhufucdev.mcre.views.SelectableIconView
+import com.zhufucdev.mcre.view.SelectableIconView
 import kotlinx.android.synthetic.main.recycler_pack_holder.view.*
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
     class PackHolder(itemView: View) : SelectableCardHolder(itemView) {
@@ -38,6 +38,11 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
         val infoGroup = itemView.findViewById<FrameLayout>(R.id.layout_info)!!
         val actionGroup = itemView.findViewById<LinearLayout>(R.id.layout_pack_actions)!!
         override val card = itemView.findViewById<CardView>(R.id.outer_card)!!
+
+        fun render(name: String, description: String) {
+            MCTextRender(this.name).doRender(name)
+            MCTextRender(this.description).doRender(description)
+        }
 
         fun expendInfo() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -167,15 +172,12 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
 
     private fun forPack(holder: PackHolder, item: ResourcesPack) {
         holder.apply {
-            if (item.icon.exists()) {
-                icon.setImageBitmap(
-                    Env.threadPool.submit<Bitmap> { BitmapFactory.decodeStream(item.icon.inputStream()) }[5, TimeUnit.SECONDS]
-                )
+            if (item.icon != null) {
+                icon.setImageBitmap(item.icon)
             } else {
                 icon.setImageResource(R.drawable.ic_block_grey)
             }
-            name.text = item.header.name
-            description.text = item.header.description
+            render(item.header.name.toString(), item.header.description)
             infoGroup.findViewById<TextView>(R.id.text_info_pack_version).text = infoGroup.context.let {
                 it.getString(
                     R.string.info_pack_version,
@@ -255,7 +257,7 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED).let { actionGroup.measure(it, it) }
 
             var isExpend = false
-            card.setOnClickListener { /*Doing Nothing*/ }
+            card.setOnClickListener { /*Do Nothing*/ }
             card.setCardOnClickListenerWithPosition({ x, y ->
                 if (onCardClickListener?.invoke(order) != false) {
                     if (!isActionGroupShown) {
@@ -272,8 +274,8 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
                         if (isExpend) buttonExpand.performClick()
                     }
                 }
-            } , { _,_ ->
-               onCardLongClickListener?.invoke(order)
+            }, { _, _ ->
+                onCardLongClickListener?.invoke(order)
             })
             icon.setOnClickListener {
                 onCardLongClickListener?.invoke(order)
@@ -286,12 +288,25 @@ class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
 
     override fun onBindViewHolder(holder: PackHolder, position: Int) {
         val item = Env.packs[position]
-        if (item.type == Bedrock || item.type == JavaVersion) {
+        if (item.type == BedrockEdition || item.type == JavaEdition) {
             forPack(holder, item.instance!!)
             initActions(holder, true, item.file, position)
         } else if (item.type == Useless) {
             forUselessness(holder, item.file)
             initActions(holder, false, item.file, position)
         }
+    }
+
+    class DiffCallback(val old: List<PackWrapper>, val new: List<PackWrapper>) : DiffUtil.Callback() {
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            (old[oldItemPosition] to new[newItemPosition]).let { it.first.file == it.second.file && it.first.type == it.second.type }
+
+        override fun getOldListSize(): Int = old.size
+
+        override fun getNewListSize(): Int = new.size
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+            old[oldItemPosition].file == new[newItemPosition].file
+
     }
 }

@@ -3,6 +3,7 @@ package com.zhufucdev.mcre.activity
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.annotation.TargetApi
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -19,9 +20,9 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.zhufucdev.mcre.Env
-import com.zhufucdev.mcre.FileFragment
-import com.zhufucdev.mcre.MainFragment
 import com.zhufucdev.mcre.R
+import com.zhufucdev.mcre.fragment.FileFragment
+import com.zhufucdev.mcre.fragment.ManagerFragment
 import com.zhufucdev.mcre.recycler_view.PacksAdapter
 import com.zhufucdev.mcre.utility.SwipeDirection
 import com.zhufucdev.mcre.utility.forEachHolder
@@ -31,9 +32,6 @@ import java.io.File
 import java.util.concurrent.Executors
 
 class MainActivity : BaseActivity() {
-
-    val mainFragment = MainFragment()
-    val fileFragment = FileFragment()
     override fun onCreate(savedInstanceState: Bundle?) {
         if (Env.threadPool.isShutdown || Env.threadPool.isTerminated)
             Env.threadPool = Executors.newCachedThreadPool()
@@ -41,18 +39,19 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
-        Handler().post {
-            // Add Main Fragment for pack viewing.
-            if (!::presentFragment.isInitialized)
-                setFragment(mainFragment, true)
+        // Add Main Fragment for pack viewing.
+        if (savedInstanceState != null) {
+            supportFragmentManager.fragments.forEach {
+                supportFragmentManager.beginTransaction().remove(it).commitNowAllowingStateLoss()
+            }
         }
-
+        setFragment(managerFragment, true)
+        // Floating Action Button logical
         fab.setOnClickListener {
             if (presentFabSrc == R.drawable.ic_add_white) {
                 if (presentFragment != fileFragment) {
                     setFragment(fileFragment)
-                    mainFragment.turnOffSelectingMode(true)
+                    managerFragment.turnOffSelectingMode(true)
                     main_bottom_app_bar.performShow()
                     ObjectAnimator.ofFloat(fab, "rotation", 0f, 135f).apply {
                         duration = 500
@@ -60,7 +59,7 @@ class MainActivity : BaseActivity() {
                         start()
                     }
                 } else {
-                    setFragment(mainFragment, true)
+                    setFragment(managerFragment, true)
                     fileFragment.removeExtendCards()
                     main_bottom_app_bar.performShow()
                     ObjectAnimator.ofFloat(fab, "rotation", 135f, 0f).apply {
@@ -72,8 +71,6 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        text_root_path.text = getString(R.string.root_path_located, Env.packsRoot.absolutePath)
-
         main_bottom_app_bar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_delete -> {
@@ -83,7 +80,7 @@ class MainActivity : BaseActivity() {
                             list.add(Env.packs[holder.adapterPosition].file)
                     }
                     Env.Packs.remove(list)
-                    mainFragment.turnOffSelectingMode(true)
+                    managerFragment.turnOffSelectingMode(true)
                     true
                 }
                 R.id.action_select_all -> {
@@ -97,32 +94,51 @@ class MainActivity : BaseActivity() {
                         else
                             holder.selectCard()
                     }
-                    mainFragment.notifyCardChanged()
+                    managerFragment.notifyCardChanged()
                     true
                 }
                 else -> false
             }
         }
+        btn_searched.setOnClickListener {
+            startActivityForResult(
+                Intent(
+                    this,
+                    SettingsActivity::class.java
+                )
+                    .putExtra(
+                    "navigate", R.id.action_mainFragment_to_generalFragment
+                )
+                    .putExtra("highlight", "pack_root"),
+                1
+            )
+        }
+
         //Permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Env.isPermissionsAllGranted) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                if (
+                    ActivityCompat.shouldShowRequestPermissionRationale(
                         this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                     )
                 ) {
                     showRationaleText()
                 } else {
-                    requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 0)
+                    requestPermissions(Env.permissions, 0)
                 }
-            } else {
-                fileFragment.adapter.refresh()
             }
         }
+        //Preference
+        Env.applyPreference(this)
     }
 
+    val managerFragment = ManagerFragment()
+    val fileFragment = FileFragment()
+    override val listenMotion: Boolean
+        get() = true
     override fun onSwipe(fraction: Float, direction: SwipeDirection) {
-        if (presentFragment == mainFragment && direction == SwipeDirection.RIGHT) {
+        if (presentFragment == managerFragment && direction == SwipeDirection.RIGHT) {
             fileFragment.view?.apply {
                 if (fraction + 0.1f < 1f) {
                     rotation = -(0.9f - fraction) * 75f
@@ -132,13 +148,13 @@ class MainActivity : BaseActivity() {
                     rotation = 0f
                 }
             }
-            mainFragment.view!!.apply {
+            managerFragment.view!!.apply {
                 rotation = 75 * fraction
                 alpha = 0.9f - fraction
             }
             fab.rotation = 45 * fraction
         } else if (presentFragment == fileFragment && direction == SwipeDirection.LEFT) {
-            mainFragment.view?.apply {
+            managerFragment.view?.apply {
                 if (fraction + 0.1f < 1f) {
                     rotation = 75 * (0.9f - fraction)
                     alpha = fraction + 0.1f
@@ -160,10 +176,10 @@ class MainActivity : BaseActivity() {
         swipeTimeBegin = System.currentTimeMillis()
         val x = fab.left + fab.width / 2f
         val y = fab.top + fab.height / 2f
-        if (presentFragment == mainFragment && direction == SwipeDirection.RIGHT) {
+        if (presentFragment == managerFragment && direction == SwipeDirection.RIGHT) {
             if (!supportFragmentManager.fragments.contains(fileFragment)) {
                 supportFragmentManager.beginTransaction()
-                    .add(R.id.main_root, fileFragment)
+                    .add(R.id.content, fileFragment)
                     .runOnCommit {
                         fileFragment.view!!.apply {
                             alpha = 0f
@@ -181,18 +197,18 @@ class MainActivity : BaseActivity() {
                     pivotY = y
                 }
             }
-            mainFragment.view!!.apply {
+            managerFragment.view!!.apply {
                 alpha = 1f
                 rotation = 0f
                 pivotX = x
                 pivotY = y
             }
         } else if (presentFragment == fileFragment && direction == SwipeDirection.LEFT) {
-            if (!supportFragmentManager.fragments.contains(mainFragment)) {
+            if (!supportFragmentManager.fragments.contains(managerFragment)) {
                 supportFragmentManager.beginTransaction()
-                    .add(R.id.main_root, fileFragment)
+                    .add(R.id.content, fileFragment)
                     .runOnCommit {
-                        mainFragment.view!!.apply {
+                        managerFragment.view!!.apply {
                             alpha = 0f
                             rotation = 75f
                             pivotX = x
@@ -201,7 +217,7 @@ class MainActivity : BaseActivity() {
                     }
                     .commitAllowingStateLoss()
             } else {
-                mainFragment.view!!.apply {
+                managerFragment.view!!.apply {
                     alpha = 0f
                     rotation = 75f
                     pivotX = x
@@ -234,35 +250,35 @@ class MainActivity : BaseActivity() {
             duration = 140
             start()
         }
-        if (presentFragment == mainFragment) {
+        if (presentFragment == managerFragment) {
             if (pass) {
                 presentFragment = fileFragment
-                mainFragment.turnOffSelectingMode(true)
+                managerFragment.turnOffSelectingMode(true)
                 main_bottom_app_bar.performShow()
                 fileFragment.view?.apply {
                     animate(this, 0f)
                 }
-                animate(mainFragment.view!!, 75f)
+                animate(managerFragment.view!!, 75f)
                 rotateFabTo(45f)
             } else {
                 fileFragment.view?.apply {
                     animate(this, -75f)
                 }
-                animate(mainFragment.view!!, 0f)
+                animate(managerFragment.view!!, 0f)
                 rotateFabTo(0f)
             }
         } else {
             if (pass) {
-                presentFragment = mainFragment
+                presentFragment = managerFragment
                 fileFragment.removeExtendCards()
                 main_bottom_app_bar.performShow()
-                mainFragment.view?.apply {
+                managerFragment.view?.apply {
                     animate(this, 0f)
                 }
                 animate(fileFragment.view!!, -75f)
                 rotateFabTo(0f)
             } else {
-                mainFragment.view?.apply {
+                managerFragment.view?.apply {
                     animate(this, 75f)
                 }
                 animate(fileFragment.view!!, 0f)
@@ -321,7 +337,7 @@ class MainActivity : BaseActivity() {
             animate()
         } else {
             supportFragmentManager.beginTransaction()
-                .add(R.id.main_root, fragment)
+                .add(R.id.content, fragment)
                 .runOnCommit {
                     fragment.view?.rotation = if (!rotationInverse) -75f else 75f
                     animate()
@@ -329,13 +345,6 @@ class MainActivity : BaseActivity() {
                 .commitAllowingStateLoss()
         }
         main_bottom_app_bar.translationZ = 10f
-    }
-
-    override fun showSnackBar(builder: (View) -> Snackbar) {
-        builder(content).apply {
-            view.translationY += fab.top + fab.translationY - main_root.measuredHeight
-            show()
-        }
     }
 
     private var presentFabSrc = R.drawable.ic_add_white
@@ -354,62 +363,6 @@ class MainActivity : BaseActivity() {
         presentFabSrc = src
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    private var isExitDialogShown = false
-    override fun onBackPressed() {
-        // Handle the action when exiting.
-        // If selecting mode is on.
-        if (mainFragment.isSelectingModeOn) {
-            mainFragment.turnOffSelectingMode(true)
-        } else {
-            // Check if there's something to do.
-            if (!Env.TODO.isEmpty && !isExitDialogShown) {
-                // If yes, show a dialog to tell the user what's gotta to be clear.
-                val dialog = AlertDialog.Builder(this)
-                    .setTitle(R.string.info_task_finishing)
-                    .setMessage(Env.TODO.firstProcessing().strRes)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.action_cancel) { _, _ ->
-                        super.onBackPressed()
-                    }
-                    .show()
-                isExitDialogShown = true
-                Env.threadPool.execute {
-                    Env.TODO.forEach { it.doIt() }
-                }
-                Env.TODO.addOnDoneListener {
-                    runOnUiThread {
-                        if (!Env.TODO.isEmpty) {
-                            dialog.setMessage(getString(Env.TODO.firstProcessing().strRes))
-                        } else {
-                            dialog.setMessage(getString(R.string.info_thread_pool_shutting_down))
-                            Env.threadPool.shutdown()
-                            dialog.dismiss()
-                            super.onBackPressed()
-                        }
-                    }
-                }
-            } else if (Env.TODO.isEmpty) {
-                super.onBackPressed()
-            }
-        }
-    }
-
     @TargetApi(Build.VERSION_CODES.M)
     private fun showRationaleText() {
         main_swipe_refresh.isVisible = false
@@ -424,14 +377,88 @@ class MainActivity : BaseActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == 0) {
-            if (grantResults.first() != PackageManager.PERMISSION_GRANTED) {
+            if (grantResults[1] != PackageManager.PERMISSION_GRANTED) {
                 showRationaleText()
             } else {
                 Env.threadPool.execute {
-                    mainFragment.listPacks()
-                    fileFragment.adapter.refresh()
+                    managerFragment.listPacks()
                 }
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1 && data != null) {
+            data.getStringArrayExtra("changes")?.forEach {
+                when (it) {
+                    "pack_root" -> managerFragment.listPacks()
+                }
+            }
+        }
+    }
+
+    override fun showSnackBar(builder: (View) -> Snackbar) {
+        builder(findViewById(android.R.id.content)).apply {
+            view.translationY += fab.top + fab.translationY - main_root.measuredHeight
+            show()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                startActivityForResult(Intent(this, SettingsActivity::class.java), 1)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private var isExitDialogShown = false
+    override fun onBackPressed() {
+        // Handle the action when exiting.
+        // If selecting mode is on.
+        // Check if there's something to do.
+        if (managerFragment.isSelectingModeOn) {
+            managerFragment.turnOffSelectingMode()
+        } else if (!Env.TODO.isEmpty && !isExitDialogShown) {
+            // If yes, show a dialog to tell the user what's gotta to be clear.
+            val dialog = AlertDialog.Builder(this)
+                .setTitle(R.string.info_task_finishing)
+                .setMessage(Env.TODO.firstProcessing().strRes)
+                .setCancelable(false)
+                .setPositiveButton(R.string.action_cancel) { _, _ ->
+                    super.onBackPressed()
+                }
+                .show()
+            isExitDialogShown = true
+            Env.threadPool.execute {
+                Env.TODO.forEach { it.doIt() }
+            }
+            Env.TODO.addOnDoneListener {
+                runOnUiThread {
+                    if (!Env.TODO.isEmpty) {
+                        dialog.setMessage(getString(Env.TODO.firstProcessing().strRes))
+                    } else {
+                        dialog.setMessage(getString(R.string.info_thread_pool_shutting_down))
+                        Env.threadPool.shutdown()
+                        dialog.dismiss()
+                        super.onBackPressed()
+                    }
+                }
+            }
+        } else if (Env.TODO.isEmpty) {
+            super.onBackPressed()
         }
     }
 }

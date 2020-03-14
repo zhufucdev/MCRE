@@ -5,7 +5,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:id="@+id/layout_extends"
-              android:background="@android:color/white">
+              android:background="?attr/colorSurface">
     <androidx.cardview.widget.CardView android:layout_width="0dp"
                                        android:layout_weight="1"
                                        android:layout_height="wrap_content"
@@ -29,7 +29,7 @@
                       android:layout_marginStart="@dimen/padding_normal"
                       android:gravity="center_vertical"
                       android:text="@string/action_back"
-                      android:textColor="@android:color/black"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="16sp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -37,7 +37,8 @@
                                        android:layout_weight="1"
                                        android:layout_height="wrap_content"
                                        android:layout_margin="@dimen/padding_normal"
-                                       android:id="@+id/extend_card_new_project">
+                                       android:id="@+id/extend_card_new_project"
+                                       android:transitionName="shared">
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="match_parent"
                       android:orientation="horizontal"
@@ -56,7 +57,7 @@
                       android:layout_marginStart="@dimen/padding_normal"
                       android:gravity="center_vertical"
                       android:text="@string/action_new_project"
-                      android:textColor="@android:color/black"
+                      android:textColor="?attr/colorOnSurface"
                       android:textSize="16sp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>

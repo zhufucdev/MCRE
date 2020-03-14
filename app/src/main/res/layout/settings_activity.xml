@@ -1,0 +1,14 @@
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:fitsSystemWindows="true"
+        android:id="@+id/settings_root">
+    <fragment
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:id="@+id/settings_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/settings_nav"/>
+</LinearLayout>
