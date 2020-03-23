@@ -67,4 +67,18 @@
     <string name="action_save">Save</string>
     <string name="name_project">Project</string>
     <string name="action_new_folder">New Folder</string>
+    <string name="action_ok">OK</string>
+    <string name="info_file_exists">File already exists.</string>
+    <string name="info_empty_name">Name must not be empty.</string>
+    <string name="title_file_replacing">File Replacing</string>
+    <string name="info_replace_or_not">File %s already exists. Do you want to replace it or not?</string>
+    <string name="name_file">File</string>
+    <string name="name_folder">Folder</string>
+    <string name="info_modified">Modified at %s</string>
+    <string name="action_replace">Replace</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_keep_both">Keep Both</string>
+    <string name="info_unknown">Unknown</string>
+    <string name="info_size_unknown">Unknown size</string>
+    <string name="info_saved_to">Saved %s to %s.</string>
 </resources>

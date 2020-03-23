@@ -19,7 +19,7 @@ import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.activity.MainActivity
 import com.zhufucdev.mcre.pack.PackWrapper
 import com.zhufucdev.mcre.pack.ResourcesPack
-import com.zhufucdev.mcre.recycler_view.PacksAdapter
+import com.zhufucdev.mcre.recycler_view.PackAdapter
 import com.zhufucdev.mcre.utility.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main.*
@@ -131,7 +131,7 @@ class ManagerFragment : Fragment(R.layout.fragment_main) {
                 else {
                     showRecycler()
                     with(it.obj as Pair<List<PackWrapper>, List<PackWrapper>>) {
-                        DiffUtil.calculateDiff(PacksAdapter.DiffCallback(first, second)).dispatchUpdatesTo(adapter)
+                        DiffUtil.calculateDiff(PackAdapter.DiffCallback(first, second)).dispatchUpdatesTo(adapter)
                     }
                 }
                 true
@@ -168,8 +168,8 @@ class ManagerFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
-    val adapter = PacksAdapter()
-    val isSelectingModeOn get() = main_recycler.any<PacksAdapter.PackHolder> { it.isCardSelected }
+    val adapter = PackAdapter()
+    val isSelectingModeOn get() = main_recycler.any<PackAdapter.PackHolder> { it.isCardSelected }
     private val toolbar by lazy { activity!!.findViewById<Toolbar>(R.id.toolbar) }
     private val appBar by lazy { activity!!.findViewById<BottomAppBar>(R.id.main_bottom_app_bar) }
     private val switchFabTo get() = (activity as MainActivity)::switchFabTo
@@ -185,7 +185,7 @@ class ManagerFragment : Fragment(R.layout.fragment_main) {
                 activity!!.menuInflater.inflate(R.menu.menu_manager, menu)
             }
         }
-        switchFabTo(R.drawable.ic_edit_white)
+        switchFabTo(R.drawable.ic_edit_white, null)
     }
 
     fun turnOffSelectingMode(sudden: Boolean = false) {
@@ -197,26 +197,26 @@ class ManagerFragment : Fragment(R.layout.fragment_main) {
                 menu.clear()
             }
         }
-        if (!sudden || main_recycler.countIf<PacksAdapter.PackHolder> { it.isCardSelected } <= 1)
-            switchFabTo(R.drawable.ic_add_white)
-        main_recycler.forEachHolder<PacksAdapter.PackHolder> { it.unselectCard() }
+        if (!sudden || main_recycler.countIf<PackAdapter.PackHolder> { it.isCardSelected } <= 1)
+            switchFabTo(R.drawable.ic_add_white, null)
+        main_recycler.forEachHolder<PackAdapter.PackHolder> { it.unselectCard() }
     }
 
     fun notifyCardChanged() {
         if (!isSelectingModeOn) turnOffSelectingMode()
         else {
-            val selected = main_recycler.countIf<PacksAdapter.PackHolder> { it.isCardSelected }
+            val selected = main_recycler.countIf<PackAdapter.PackHolder> { it.isCardSelected }
             if (selected == 1) {
-                switchFabTo(R.drawable.ic_edit_white)
+                switchFabTo(R.drawable.ic_edit_white, null)
             } else {
-                switchFabTo(R.drawable.ic_add_white)
+                switchFabTo(R.drawable.ic_add_white, null)
             }
         }
     }
 
     private fun setOnCardClickListener() {
         adapter.setOnCardLongClickListener {
-            val holder = main_recycler.get<PacksAdapter.PackHolder>(it)
+            val holder = main_recycler.get<PackAdapter.PackHolder>(it)
             if (!isSelectingModeOn) {
                 holder.selectCard()
                 turnOnSelectingMode()
@@ -225,7 +225,7 @@ class ManagerFragment : Fragment(R.layout.fragment_main) {
                     turnOffSelectingMode(true)
                 else {
                     holder.selectCard()
-                    main_recycler.forEachHolderIndexed<PacksAdapter.PackHolder> { t, i ->
+                    main_recycler.forEachHolderIndexed<PackAdapter.PackHolder> { t, i ->
                         if (i != it) t.unselectCard()
                     }
                 }
@@ -233,14 +233,14 @@ class ManagerFragment : Fragment(R.layout.fragment_main) {
 
         }
         adapter.setOnCardClickListener { index ->
-            main_recycler.forEachHolderIndexed<PacksAdapter.PackHolder> { t, i ->
+            main_recycler.forEachHolderIndexed<PackAdapter.PackHolder> { t, i ->
                 if (i != index && t.isActionGroupShown) {
                     t.hideActions()
                 }
             }
             !isSelectingModeOn.apply {
                 if (this) {
-                    main_recycler.get<PacksAdapter.PackHolder>(index).apply {
+                    main_recycler.get<PackAdapter.PackHolder>(index).apply {
                         if (isCardSelected) {
                             unselectCard()
                         } else {

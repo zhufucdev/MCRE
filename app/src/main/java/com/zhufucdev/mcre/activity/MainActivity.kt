@@ -23,9 +23,10 @@ import com.zhufucdev.mcre.Env
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.fragment.FileFragment
 import com.zhufucdev.mcre.fragment.ManagerFragment
-import com.zhufucdev.mcre.recycler_view.PacksAdapter
+import com.zhufucdev.mcre.recycler_view.PackAdapter
 import com.zhufucdev.mcre.utility.SwipeDirection
 import com.zhufucdev.mcre.utility.forEachHolder
+import com.zhufucdev.mcre.utility.hideThen
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main.*
 import java.io.File
@@ -48,8 +49,9 @@ class MainActivity : BaseActivity() {
         setFragment(managerFragment, true)
         // Floating Action Button logical
         fab.setOnClickListener {
+            val fragment = presentFragment
             if (presentFabSrc == R.drawable.ic_add_white) {
-                if (presentFragment != fileFragment) {
+                if (fragment != fileFragment) {
                     setFragment(fileFragment)
                     managerFragment.turnOffSelectingMode(true)
                     main_bottom_app_bar.performShow()
@@ -68,6 +70,8 @@ class MainActivity : BaseActivity() {
                         start()
                     }
                 }
+            } else if (fragment is View.OnClickListener) {
+                fragment.onClick(it)
             }
         }
 
@@ -75,7 +79,7 @@ class MainActivity : BaseActivity() {
             when (it.itemId) {
                 R.id.action_delete -> {
                     val list = ArrayList<File>()
-                    main_recycler.forEachHolder<PacksAdapter.PackHolder> { holder ->
+                    main_recycler.forEachHolder<PackAdapter.PackHolder> { holder ->
                         if (holder.isCardSelected)
                             list.add(Env.packs[holder.adapterPosition].file)
                     }
@@ -84,11 +88,11 @@ class MainActivity : BaseActivity() {
                     true
                 }
                 R.id.action_select_all -> {
-                    main_recycler.forEachHolder<PacksAdapter.PackHolder> { holder -> holder.selectCard() }
+                    main_recycler.forEachHolder<PackAdapter.PackHolder> { holder -> holder.selectCard() }
                     true
                 }
                 R.id.action_select_inverse -> {
-                    main_recycler.forEachHolder<PacksAdapter.PackHolder> { holder ->
+                    main_recycler.forEachHolder<PackAdapter.PackHolder> { holder ->
                         if (holder.isCardSelected)
                             holder.unselectCard()
                         else
@@ -348,18 +352,15 @@ class MainActivity : BaseActivity() {
     }
 
     private var presentFabSrc = R.drawable.ic_add_white
-    fun switchFabTo(src: Int) {
+    fun switchFabTo(src: Int, inBetween: (() -> Unit)? = null) {
         if (presentFabSrc != src)
-            fab.hide(
-                object : FloatingActionButton.OnVisibilityChangedListener() {
-                    override fun onHidden(fab: FloatingActionButton) {
-                        Handler().postDelayed({
-                            fab.setImageResource(src)
-                            fab.show()
-                        }, 100)
-                    }
-                }
-            )
+            fab.hideThen {
+                inBetween?.invoke()
+                Handler().postDelayed({
+                    setImageResource(src)
+                    show()
+                }, 100)
+            }
         presentFabSrc = src
     }
 

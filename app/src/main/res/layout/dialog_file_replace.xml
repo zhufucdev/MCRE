@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="@dimen/padding_big">
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+              android:id="@+id/text"
+              android:text="@string/info_replace_or_not"
+              android:textColor="?attr/colorOnSurface"/>
+    <com.zhufucdev.mcre.view.SimpleItemView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/file_existing"
+            app:title="Existing File"
+            app:subtitle="FileType DateModified Size"
+            app:icon="@drawable/ic_file_black"/>
+    <com.zhufucdev.mcre.view.SimpleItemView
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:id="@+id/file_replacing"
+            app:title="Replacing File"
+            app:subtitle="FileType DateModified Size"
+            app:icon="@drawable/ic_file_black"/>
+</LinearLayout>

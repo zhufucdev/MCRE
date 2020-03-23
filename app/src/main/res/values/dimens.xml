@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="padding_normal">6dp</dimen>
+    <dimen name="padding_icon">9dp</dimen>
     <dimen name="padding_big">16dp</dimen>
     <dimen name="text_title">26sp</dimen>
     <dimen name="text_small">20sp</dimen>

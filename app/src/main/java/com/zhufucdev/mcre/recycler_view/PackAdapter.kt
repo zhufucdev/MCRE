@@ -29,7 +29,7 @@ import com.zhufucdev.mcre.view.SelectableIconView
 import kotlinx.android.synthetic.main.recycler_pack_holder.view.*
 import java.io.File
 
-class PacksAdapter : RecyclerView.Adapter<PacksAdapter.PackHolder>() {
+class PackAdapter : RecyclerView.Adapter<PackAdapter.PackHolder>() {
     class PackHolder(itemView: View) : SelectableCardHolder(itemView) {
         val icon = itemView.findViewById<SelectableIconView>(R.id.img_pack_icon)!!
         val name = itemView.findViewById<TextView>(R.id.text_pack_name)!!

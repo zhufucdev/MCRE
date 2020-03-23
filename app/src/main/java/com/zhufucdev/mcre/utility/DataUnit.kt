@@ -16,18 +16,18 @@ enum class DataUnit {
         fun format(x: BigInteger): Pair<DataUnit, BigInteger>{
             return when {
                 x.compareTo(1024.toBigInteger()) == -1 -> {
-                    DataUnit.B to x
+                    B to x
                 }
                 x.compareTo(BigInteger.valueOf(1024).pow(2)) == -1 -> {
-                    DataUnit.KB to x.divide(1024.toBigInteger())
+                    KB to x.divide(1024.toBigInteger())
                 }
                 x.compareTo(BigInteger.valueOf(1024).pow(3)) == -1 -> {
-                    DataUnit.MB to x.divide((1024).toBigInteger().pow(2))
+                    MB to x.divide((1024).toBigInteger().pow(2))
                 }
                 x.compareTo(BigInteger.valueOf(1024).pow(4)) == -1 -> {
-                    DataUnit.GB to x.divide((1024).toBigInteger().pow(3))
+                    GB to x.divide((1024).toBigInteger().pow(3))
                 }
-                else -> DataUnit.B to x
+                else -> B to x
             }
         }
     }

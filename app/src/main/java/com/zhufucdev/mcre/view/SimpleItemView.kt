@@ -34,6 +34,9 @@ class SimpleItemView : FrameLayout {
         set(value) {
             text_subtitle.text = value
         }
+    fun setIcon(resourceID: Int) {
+        icon.setImageResource(resourceID)
+    }
 
     fun bind(element: BaseElement) {
         title = element.title.get(context)

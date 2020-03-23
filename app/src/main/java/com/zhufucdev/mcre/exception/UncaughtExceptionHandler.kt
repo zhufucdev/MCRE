@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Looper
 import androidx.appcompat.app.AlertDialog
 import com.zhufucdev.mcre.R
+import com.zhufucdev.mcre.internal.ContextStringSupplier
 import kotlin.concurrent.thread
 
 class UncaughtExceptionHandler(private val context: Context) : Thread.UncaughtExceptionHandler {
@@ -20,8 +21,8 @@ class UncaughtExceptionHandler(private val context: Context) : Thread.UncaughtEx
                 firstCause = firstCause.cause!!
             }
             val message =
-                if (firstCause is LocalizedException) {
-                    context.getString((firstCause as LocalizedException).messageID, *firstCause.formatArgs)
+                if (firstCause is ContextStringSupplier) {
+                    (firstCause as ContextStringSupplier).get(context)
                 } else {
                     "in ${t.name} thread" +
                             "${System.lineSeparator()} ${e::class.simpleName}: ${e.message} "

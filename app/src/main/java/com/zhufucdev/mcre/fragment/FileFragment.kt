@@ -23,22 +23,26 @@ import com.zhufucdev.mcre.activity.ProjectActivity
 import com.zhufucdev.mcre.recycler_view.FileAdapter
 import com.zhufucdev.mcre.utility.Logger
 import com.zhufucdev.mcre.utility.forEachHolder
+import com.zhufucdev.mcre.utility.get
 import com.zhufucdev.mcre.utility.measure
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_file.*
 import java.io.File
+import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.jvmName
 
-class FileFragment : Fragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
+class FileFragment : Fragment(), View.OnClickListener {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         inflater.inflate(R.layout.fragment_file, container, false)
 
-    lateinit var adapter: FileAdapter
+    private lateinit var adapter: FileAdapter
     private val signEmptyPackItems by lazy {
         (activity as MainActivity).managerFragment.view?.findViewById<LinearLayout>(
             R.id.sign_empty_pack_items
         )
     }
     private val topCard by lazy { activity?.findViewById<LinearLayout>(R.id.card_top_root) }
+    private val switchFabTo get() = (activity as MainActivity)::switchFabTo
 
     private fun extendCards(disableBack: Boolean): View =
         LayoutInflater.from(context).inflate(R.layout.recycler_file_extends, topCard, false).apply {
@@ -87,9 +91,18 @@ class FileFragment : Fragment() {
                     holder.unselectCard()
                 }
             }
+            if (adapter.selectedFile?.isDirectory == true) {
+                switchFabTo(R.drawable.ic_open_in_new_black) {
+                    (activity as MainActivity).fab.rotation = 0f
+                }
+            } else {
+                switchFabTo(R.drawable.ic_add_white) {
+                    (activity as MainActivity).fab.rotation = 45f
+                }
+            }
         }
 
-        adapter.setOnAltButtonClickListener {
+        adapter.setOnAltButtonClickListener { _, _ ->
             startActivity(
                 Intent(context, ProjectActivity::class.java),
                 ActivityOptions.makeSceneTransitionAnimation(
@@ -155,7 +168,21 @@ class FileFragment : Fragment() {
         }
     }
 
+    // On fab click
+    override fun onClick(v: View?) {
+        val path = adapter.selectedFile?.absolutePath
+        if (path != null) {
+            startActivity(
+                Intent(
+                    context,
+                    ProjectActivity::class.java
+                ).putExtra("open", path)
+            )
+        }
+    }
+
     companion object {
         var showing: File = Environment.getExternalStorageDirectory()
+
     }
 }

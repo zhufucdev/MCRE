@@ -10,7 +10,7 @@
     <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
                  android:background="@drawable/shape_round">
         <com.zhufucdev.mcre.view.SelectableIconView
-                android:layout_margin="@dimen/padding_normal"
+                android:layout_margin="@dimen/padding_icon"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/icon"

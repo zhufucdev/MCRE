@@ -78,8 +78,7 @@ fun CardView.setCardOnClickListenerWithPosition(
     var isUp: Boolean
     var isLongClick = false
     var lastDown = 0L
-    val cardDefaultElevation =
-        context.resources.getDimension(com.google.android.material.R.dimen.cardview_default_elevation)
+    val cardDefaultElevation = context.resources.getDimension(com.google.android.material.R.dimen.cardview_default_elevation)
     if (onCardClickListener == null && onCardLongClickListener == null){
         setOnTouchListener(null)
     } else {
@@ -236,3 +235,5 @@ fun Int.nameify() = Name(this)
 fun alert(error: Exception) {
     thread(name = "virtual") { throw error }
 }
+
+infix fun Int.orBigger(b: Int): Int = if (this >= b) this else b

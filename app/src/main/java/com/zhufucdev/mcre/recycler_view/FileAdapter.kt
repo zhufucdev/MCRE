@@ -14,6 +14,7 @@ import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.exception.SharedStorageNotAvailableException
 import com.zhufucdev.mcre.fragment.FileFragment
 import com.zhufucdev.mcre.utility.setCardOnClickListenerWithPosition
+import com.zhufucdev.mcre.utility.setOnClickListenerWithPosition
 import com.zhufucdev.mcre.view.SelectableIconView
 import java.io.File
 
@@ -73,6 +74,7 @@ class FileAdapter(
             }
             name.setText(text)
         }
+
         fun upperLevel(disable: Boolean = false) {
             standActionButton(disable, R.drawable.ic_arrow_back, R.string.action_back)
         }
@@ -112,7 +114,8 @@ class FileAdapter(
         return@let directories
     }
 
-    private var list = files() ?: throw SharedStorageNotAvailableException()
+    var list = files() ?: throw SharedStorageNotAvailableException()
+        private set
 
     fun refresh() {
         files()?.apply { list = this }
@@ -136,21 +139,25 @@ class FileAdapter(
         onDirectoryChangedListener = l
     }
 
-    private var onNewProjectCreatedListener: (() -> Unit)? = null
-    fun setOnAltButtonClickListener(l: () -> Unit) {
+    private var onNewProjectCreatedListener: ((Float, Float) -> Unit)? = null
+    fun setOnAltButtonClickListener(l: (Float, Float) -> Unit) {
         onNewProjectCreatedListener = l
     }
 
     // UI
-    fun giveUpperLevelListenersTo(card: CardView, disable: Boolean) =
-        card.setCardOnClickListenerWithPosition(onCardClickListener = (if (!disable) { _, _ ->
-            root = root.parentFile!!
-            refresh()
-            onDirectoryChangedListener?.invoke()
-        } else null) as ((Float, Float) -> Unit)?) // This cast is USEFUL
+    fun giveUpperLevelListenersTo(card: CardView, disable: Boolean) {
+        if (!disable)
+            card.setCardOnClickListenerWithPosition (onCardClickListener = { _, _ ->
+                root = root.parentFile!!
+                refresh()
+                onDirectoryChangedListener?.invoke()
+            })
+        else
+            card.setOnClickListenerWithPosition()
+    }
 
-    private fun giveAltButtonListenerTo(card: CardView) = card.setCardOnClickListenerWithPosition({ _, _ ->
-        onNewProjectCreatedListener?.invoke()
+    fun giveAltButtonListenerTo(card: CardView) = card.setCardOnClickListenerWithPosition({ x, y ->
+        onNewProjectCreatedListener?.invoke(x, y)
     })
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileHolder =

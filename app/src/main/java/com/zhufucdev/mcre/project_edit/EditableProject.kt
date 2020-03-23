@@ -45,22 +45,24 @@ class EditableProject {
     constructor(root: File) {
         file = root
         elements = arrayListOf()
-        val header = JsonParser().parse(root.reader()).asJsonArray
+        val header = JsonParser().parse(File(root, "header.json").reader()).asJsonArray
         val packagePrefix = this::class.qualifiedName!!.removeSuffix("." + this::class.simpleName!!)
         header.forEach {
             val obj = it.asJsonObject
             val name = obj["name"].asString
             elements.add(
-                (ClassLoader.getSystemClassLoader()
-                    .loadClass("$packagePrefix.$name").kotlin.companionObjectInstance as Deserializable)
+                (Class.forName("$packagePrefix.element.$name").kotlin.companionObjectInstance as Deserializable)
                     .deserialize(obj["value"])
             )
         }
     }
 
     fun save(dest: File? = null) {
-        if (file == null) throw IllegalArgumentException("{dest} must not be null.")
-        dest?.let { file = it }
+        if (file == null && dest == null) throw IllegalArgumentException("{dest} must not be null.")
+        dest?.let {
+            file = it
+            if (!it.exists()) it.mkdirs()
+        }
         val writer = beginGenerateHeader()
         elements.forEach {
             val v = it.serialize(this)
