@@ -20,8 +20,8 @@ class ProjectPagerAdapter(
 ) :
     FragmentStateAdapter(manager, parent.lifecycle) {
     val dataFragment =
-        DataFragment(this, lazy { parent.project })
-    val assetFragment = AssetFragment()
+        DataFragment(this, parent.project)
+    val assetFragment = AssetFragment(parent.project)
 
     private var mTabs = arrayListOf(
         Tab(

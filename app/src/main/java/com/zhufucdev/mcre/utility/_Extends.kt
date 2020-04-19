@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AlphaAnimation
@@ -18,6 +19,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.zhufucdev.mcre.Env
 import com.zhufucdev.mcre.Processes
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.project_edit.Name
@@ -78,8 +80,9 @@ fun CardView.setCardOnClickListenerWithPosition(
     var isUp: Boolean
     var isLongClick = false
     var lastDown = 0L
-    val cardDefaultElevation = context.resources.getDimension(com.google.android.material.R.dimen.cardview_default_elevation)
-    if (onCardClickListener == null && onCardLongClickListener == null){
+    val cardDefaultElevation =
+        context.resources.getDimension(com.google.android.material.R.dimen.cardview_default_elevation)
+    if (onCardClickListener == null && onCardLongClickListener == null) {
         setOnTouchListener(null)
     } else {
         setOnTouchListener { _, event ->
@@ -197,9 +200,9 @@ enum class SwipeDirection {
 
 fun View.setHorizantalSwipeListener(l: (Float, SwipeDirection) -> Unit) {
     var startX = 0f
-    Logger.info(Processes.Debug,"Width = $width")
+    Logger.info(Processes.Debug, "Width = $width")
     setOnTouchListener { _, event ->
-        Logger.info(Processes.Debug,"Event = ${event.action}")
+        Logger.info(Processes.Debug, "Event = ${event.action}")
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 startX = event.x
@@ -237,3 +240,12 @@ fun alert(error: Exception) {
 }
 
 infix fun Int.orBigger(b: Int): Int = if (this >= b) this else b
+
+var MenuItem.enabled
+    get() = this.isEnabled
+    set(value) {
+        this.iconTintList =
+            if (value) null
+            else Env.presentActivity.getColorStateList(R.color.colorDisabled)
+        this.isEnabled = value
+    }

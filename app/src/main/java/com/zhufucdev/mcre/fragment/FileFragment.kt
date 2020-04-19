@@ -20,6 +20,7 @@ import com.zhufucdev.mcre.Processes
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.activity.MainActivity
 import com.zhufucdev.mcre.activity.ProjectActivity
+import com.zhufucdev.mcre.project_edit.EditableProject
 import com.zhufucdev.mcre.recycler_view.FileAdapter
 import com.zhufucdev.mcre.utility.Logger
 import com.zhufucdev.mcre.utility.forEachHolder
@@ -78,27 +79,35 @@ class FileFragment : Fragment(), View.OnClickListener {
                 removeExtendCards()
             }
         }
+
+        fun fabStyleOpen() {
+            switchFabTo(R.drawable.ic_open_in_new_black) {
+                (activity as MainActivity).fab.rotation = 0f
+            }
+        }
+        fun fabStyleAdd() {
+            switchFabTo(R.drawable.ic_add_white) {
+                (activity as MainActivity).fab.rotation = 45f
+            }
+        }
         adapter.setOnDirectoryChangedListener {
             nestedScrollView.scrollTo(0, 0)
             if (isExtendCardsAdded) {
                 removeExtendCards()
             }
+            if (EditableProject.isProject(adapter.root)) {
+                fabStyleOpen()
+            } else {
+                fabStyleAdd()
+            }
         }
 
         adapter.setOnItemClickListener {
-            file_recycler_view.forEachHolder<FileAdapter.FileHolder> { holder ->
-                if (holder.layoutPosition != it) {
-                    holder.unselectCard()
-                }
-            }
-            if (adapter.selectedFile?.isDirectory == true) {
-                switchFabTo(R.drawable.ic_open_in_new_black) {
-                    (activity as MainActivity).fab.rotation = 0f
-                }
+            val selection = adapter.selectedFile
+            if (selection?.isDirectory == true && EditableProject.isProject(selection)) {
+                fabStyleOpen()
             } else {
-                switchFabTo(R.drawable.ic_add_white) {
-                    (activity as MainActivity).fab.rotation = 45f
-                }
+                fabStyleAdd()
             }
         }
 
@@ -170,19 +179,26 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     // On fab click
     override fun onClick(v: View?) {
-        val path = adapter.selectedFile?.absolutePath
-        if (path != null) {
-            startActivity(
+        val path = if (adapter.selectedFile != null) adapter.selectedFile!! else adapter.root
+        if (EditableProject.isProject(path)) {
+            startActivityForResult(
                 Intent(
                     context,
                     ProjectActivity::class.java
-                ).putExtra("open", path)
+                ).putExtra("open", path.absolutePath),
+                0
             )
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 0) {
+            adapter.unselectCurrent()
+            adapter.refresh()
         }
     }
 
     companion object {
         var showing: File = Environment.getExternalStorageDirectory()
-
     }
 }

@@ -1,6 +1,7 @@
 package com.zhufucdev.mcre.project_edit.fragment
 
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.activity.ProjectActivity
@@ -9,19 +10,19 @@ import com.zhufucdev.mcre.project_edit.work.ProjectPagerAdapter
 import com.zhufucdev.mcre.project_edit.work.TextEditTab
 import kotlinx.android.synthetic.main.fragment_data.*
 
-class DataFragment(private val pagerAdapter: ProjectPagerAdapter, private val project: Lazy<EditableProject>) : BaseFragment(R.layout.fragment_data) {
+class DataFragment(private val pagerAdapter: ProjectPagerAdapter, project: EditableProject) : BaseFragment(R.layout.fragment_data, project) {
     private val nameEdit by lazy {
-        val project = project.value
         TextEditFragment(
             getString(R.string.name_name),
-            project::name
+            project::name,
+            project
         )
     }
     private val descriptionEdit by lazy {
-        val project = project.value
         TextEditFragment(
             getString(R.string.name_description),
-            project::description
+            project::description,
+            project
         )
     }
     override val fabResource: Int
@@ -44,5 +45,8 @@ class DataFragment(private val pagerAdapter: ProjectPagerAdapter, private val pr
             pagerAdapter.addTab(tab)
             tab.head()
         }
+    }
+
+    override fun initAppbar(menu: Menu) {
     }
 }

@@ -24,7 +24,7 @@ class FileAdapter(
     private val altButtonText: Int = R.string.action_new_project
 ) :
     RecyclerView.Adapter<FileAdapter.FileHolder>() {
-    class FileHolder(itemView: View) : SelectableCardHolder(itemView) {
+    class FileHolder(itemView: View, private val parent: FileAdapter) : SelectableCardHolder(itemView) {
         val icon = itemView.findViewById<SelectableIconView>(R.id.img_file_type)!!
         val name = itemView.findViewById<TextView>(R.id.text_file_name)!!
         override val card = itemView.findViewById<CardView>(R.id.card_file)!!
@@ -85,12 +85,14 @@ class FileAdapter(
 
         override fun selectCard() {
             if (isCardSelected) return
+            parent.selectedItem = this
             icon.select()
             super.selectCard()
         }
 
         override fun unselectCard() {
             if (!isCardSelected) return
+            if (parent.selectedItem?.name == name) parent.selectedItem = null
             icon.unselect()
             super.unselectCard()
         }
@@ -126,6 +128,13 @@ class FileAdapter(
 
     var selectedFile: File? = null
         private set
+    private var selectedItem: FileHolder? = null
+    fun unselectCurrent() {
+        val selection = selectedItem ?: return
+        selection.unselectCard()
+        selectedFile = null
+        onItemClickListener?.invoke(selection.adapterPosition)
+    }
 
     // Listeners
     private var onItemClickListener: ((Int) -> Unit)? = null
@@ -147,7 +156,7 @@ class FileAdapter(
     // UI
     fun giveUpperLevelListenersTo(card: CardView, disable: Boolean) {
         if (!disable)
-            card.setCardOnClickListenerWithPosition (onCardClickListener = { _, _ ->
+            card.setCardOnClickListenerWithPosition(onCardClickListener = { _, _ ->
                 root = root.parentFile!!
                 refresh()
                 onDirectoryChangedListener?.invoke()
@@ -161,7 +170,7 @@ class FileAdapter(
     })
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileHolder =
-        FileHolder(LayoutInflater.from(parent.context).inflate(R.layout.recycler_file_holder, parent, false))
+        FileHolder(LayoutInflater.from(parent.context).inflate(R.layout.recycler_file_holder, parent, false), this)
 
     override fun getItemCount(): Int = list.size + 2
     var newProjectCard: CardView? = null

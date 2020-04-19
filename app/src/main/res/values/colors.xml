@@ -5,6 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorAccentLight">#F8BBD0</color>
     <color name="colorOnToolbar">#616161</color>
+    <color name="colorDisabled">@android:color/darker_gray</color>
 
     <!-- Minecraft Standard Foreground Text Color -->
     <color name="mcBlack">#000000</color>

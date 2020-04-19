@@ -81,4 +81,7 @@
     <string name="info_unknown">Unknown</string>
     <string name="info_size_unknown">Unknown size</string>
     <string name="info_saved_to">Saved %s to %s.</string>
+    <string name="name_copy">Copy</string>
+    <string name="name_unnamed">Unnamed</string>
+    <string name="action_redo">Redo</string>
 </resources>

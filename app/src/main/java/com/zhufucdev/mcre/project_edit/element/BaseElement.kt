@@ -2,7 +2,7 @@ package com.zhufucdev.mcre.project_edit.element
 
 import com.zhufucdev.mcre.project_edit.Name
 
-abstract class BaseElement : ISerializable{
+abstract class BaseElement : ISerializable {
     abstract val title: Name
     abstract val description: Name
 

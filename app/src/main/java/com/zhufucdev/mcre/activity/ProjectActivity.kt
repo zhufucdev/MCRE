@@ -215,7 +215,7 @@ class ProjectActivity : BaseActivity(), TabLayout.OnTabSelectedListener {
                                 showResult(target)
                             }
                             setOnKeepBothClickListener {
-                                val new = File(adapter.root, project.name.value + " (1)")
+                                val new = File(adapter.root, project.name.value + " (${getString(R.string.name_copy)})")
                                 project.save(new)
                                 showResult(new)
                             }
@@ -318,6 +318,11 @@ class ProjectActivity : BaseActivity(), TabLayout.OnTabSelectedListener {
     }
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
+    }
+
+    override fun onBackPressed() {
+
+        super.onBackPressed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

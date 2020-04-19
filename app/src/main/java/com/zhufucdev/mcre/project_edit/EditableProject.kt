@@ -7,6 +7,8 @@ import com.zhufucdev.mcre.project_edit.element.BaseElement
 import com.zhufucdev.mcre.project_edit.element.Deserializable
 import com.zhufucdev.mcre.project_edit.element.PackDescription
 import com.zhufucdev.mcre.project_edit.element.PackName
+import com.zhufucdev.mcre.project_edit.operation_like.Operation
+import com.zhufucdev.mcre.project_edit.operation_like.UndoRedo
 import java.io.File
 import kotlin.reflect.full.companionObjectInstance
 
@@ -37,6 +39,7 @@ class EditableProject {
         }
     var file: File? = null
     private val elements: ArrayList<BaseElement>
+    val operationStack = OperationStack()
 
     constructor() {
         elements = arrayListOf(PackName(), PackDescription())
@@ -88,5 +91,49 @@ class EditableProject {
     private fun endHeader(writer: JsonWriter) {
         // EOF
         writer.endArray().flush()
+    }
+
+    class OperationStack {
+        private val list = ArrayList<UndoRedo>()
+        var header = -1
+            private set
+        val canUndo: Boolean get() = header >= 0
+        val canRedo: Boolean get() = header < list.lastIndex
+
+        private var mStatusChangeListener: ((Boolean, Boolean) -> Unit)? = null
+        fun setStatusChangeListener(l: (Boolean, Boolean) -> Unit) {
+            mStatusChangeListener = l
+        }
+
+        fun <T: UndoRedo> add(operation: T): T {
+            if (list.lastIndex != header)
+                for (i in list.lastIndex downTo header + 1) {
+                    list.removeAt(i)
+                }
+            list.add(operation)
+            header = list.lastIndex
+            mStatusChangeListener?.invoke(canUndo, canRedo)
+            return operation
+        }
+
+        fun undo() {
+            list[header].undo()
+            header--
+
+            mStatusChangeListener?.invoke(canUndo, canRedo)
+        }
+
+        fun redo() {
+            header++
+            list[header].redo()
+
+            mStatusChangeListener?.invoke(canUndo, canRedo)
+        }
+    }
+
+    companion object {
+        fun isProject(file: File): Boolean {
+            return file.isDirectory && File(file, "header.json").isFile
+        }
     }
 }

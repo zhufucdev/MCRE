@@ -31,6 +31,7 @@ class MCTextRender(private val attachTo: TextView): Destroyable {
     private val context = attachTo.context!!
     private var lastRenderRequest = System.currentTimeMillis()
     private var lastRender = System.currentTimeMillis()
+    private var lastRenderedContent = ""
     private fun renderTextFormat() {
         if (System.currentTimeMillis() - lastRender < 300)
             return
@@ -46,9 +47,10 @@ class MCTextRender(private val attachTo: TextView): Destroyable {
 
     fun doRender(sourceText: String? = null) {
         lastRender = System.currentTimeMillis()
+        val rawText = sourceText?.also { attachTo.text = it } ?: attachTo.text
+        mRenderListener?.invoke(lastRenderedContent, rawText.toString())
+        lastRenderedContent = rawText.toString()
         try {
-            val rawText = sourceText?.also { attachTo.text = it } ?: attachTo.text
-            Logger.info(Processes.MCTextRender, "Render text $rawText")
             val selections = rawText.split(TextUtil.END)
             val spanBuilder = SpannableStringBuilder()
             val handleSelection: (Int, String) -> Unit = { index, selection ->
@@ -140,6 +142,11 @@ class MCTextRender(private val attachTo: TextView): Destroyable {
     private var mExceptionListener: ((Exception) -> Unit)? = null
     fun setExceptionListener(l: (Exception) -> Unit) {
         mExceptionListener = l
+    }
+
+    private var mRenderListener: ((String, String) -> Unit)? = null
+    fun setRenderListener(l: (String, String) -> Unit) {
+        mRenderListener = l
     }
 
     private var mDestroyed = false
