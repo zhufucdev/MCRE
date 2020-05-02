@@ -40,13 +40,16 @@ class ProjectActivity : BaseActivity(), TabLayout.OnTabSelectedListener {
     lateinit var project: EditableProject
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // UI
         setContentView(R.layout.base_layout)
         LayoutInflater.from(this).inflate(R.layout.activity_project, container)
         setSupportActionBar(bottom_app_bar)
+        // Data
         project =
             intent.getStringExtra("open")?.let { EditableProject(File(it)) }
                 ?: EditableProject()
-
+        projectActivities[project] = this
+        // UI
         pagerAdapter = ProjectPagerAdapter(
             supportFragmentManager,
             tab_layout to view_pager,
@@ -345,5 +348,8 @@ class ProjectActivity : BaseActivity(), TabLayout.OnTabSelectedListener {
                     .show()
             }
         }
+
+        private val projectActivities = hashMapOf<EditableProject, ProjectActivity>()
+        operator fun get(project: EditableProject) = projectActivities[project]
     }
 }

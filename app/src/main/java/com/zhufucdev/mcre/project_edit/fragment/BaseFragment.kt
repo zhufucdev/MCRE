@@ -23,6 +23,8 @@ abstract class BaseFragment(contentLayoutID: Int, val project: EditableProject, 
         super.onActivityCreated(savedInstanceState)
         callFab()
         callAppbar()
+
+        mReadyListener?.invoke()
     }
 
     override fun onResume() {
@@ -68,12 +70,18 @@ abstract class BaseFragment(contentLayoutID: Int, val project: EditableProject, 
         }
     }
 
+    // Initialization
     abstract val fabResource: Int
     open val fabListener: ((View) -> Unit)? get() = null
     val fab get() = activity?.findViewById<FloatingActionButton>(R.id.fab)
     private val appbar by lazy { activity?.findViewById<BottomAppBar>(R.id.bottom_app_bar) }
     private var showAppbar = true
     abstract fun initAppbar(menu: Menu)
-
     lateinit var tab: ProjectPagerAdapter.Tab
+
+    // Listener
+    private var mReadyListener: (() -> Unit)? = null
+    fun setReadyListener(l: () -> Unit) {
+        mReadyListener = l
+    }
 }

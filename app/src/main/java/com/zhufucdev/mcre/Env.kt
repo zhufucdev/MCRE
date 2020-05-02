@@ -17,6 +17,8 @@ import com.zhufucdev.mcre.activity.BaseActivity
 import com.zhufucdev.mcre.activity.MainActivity
 import com.zhufucdev.mcre.pack.PackWrapper
 import com.zhufucdev.mcre.pack.ResourcesPack
+import com.zhufucdev.mcre.project_edit.element.StringElement
+import com.zhufucdev.mcre.project_edit.work.TextEditTab
 import com.zhufucdev.mcre.utility.DataUnit
 import java.io.File
 import java.lang.IllegalArgumentException
@@ -200,5 +202,7 @@ object Env {
         )
     }
 
-    fun formatDate(date: Date) = DateFormat.getDateTimeInstance().format(date)!!
+    fun formatDate(date: Date): String = DateFormat.getDateTimeInstance().format(date)
+
+    val elementToTab = mapOf(StringElement::class to TextEditTab::class)
 }

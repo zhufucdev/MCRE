@@ -15,6 +15,8 @@ import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.project_edit.EditableProject
 import com.zhufucdev.mcre.project_edit.element.StringElement
 import com.zhufucdev.mcre.project_edit.operation_like.Operation
+import com.zhufucdev.mcre.project_edit.work.ProjectPagerAdapter
+import com.zhufucdev.mcre.project_edit.work.TextEditTab
 import com.zhufucdev.mcre.recycler_view.ColorsAdapter
 import com.zhufucdev.mcre.utility.*
 import kotlinx.android.synthetic.main.fragment_edit_text.*
@@ -28,10 +30,11 @@ class TextEditFragment(val itemName: String, override val editing: StringElement
     private val cpShowTranslation get() = 0f
     private val bottomAppBar by lazy { activity?.findViewById<BottomAppBar>(R.id.bottom_app_bar) }
     private val keyboardListener by lazy { KeyboardChangeListener(activity!!.findViewById(R.id.project_root)) }
-    private val colorsPanel by lazy { activity?.findViewById<CardView>(R.id.colors_panel) }
+    private val colorsPanel by lazy { colors_panel }
     private val colorsAdapter = ColorsAdapter()
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         item_name.text = getString(R.string.title_edit_what, itemName)
         edit_text.setText(editing.value)
         render = MCTextRender(edit_text)
@@ -46,9 +49,9 @@ class TextEditFragment(val itemName: String, override val editing: StringElement
         }
         var hasUndone = false
         render.setRenderListener { before, end ->
-            val undoRedo: () -> Unit = {
+            val undoRedo: (ProjectPagerAdapter.Tab?) -> Unit = {
                 hasUndone = true
-                render.doRender(editing.value)
+                if (it != null) (it.fragment as TextEditFragment).render.doRender(editing.value)
             }
             if (hasUndone) {
                 hasUndone = false
@@ -67,7 +70,7 @@ class TextEditFragment(val itemName: String, override val editing: StringElement
             adapter = colorsAdapter
             layoutManager = GridLayoutManager(context, 4)
         }
-        colors_panel.apply {
+        colorsPanel!!.apply {
             measure()
             translationY = cpHideTranslation
         }

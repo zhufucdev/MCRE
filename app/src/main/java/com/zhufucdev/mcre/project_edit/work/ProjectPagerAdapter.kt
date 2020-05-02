@@ -21,8 +21,7 @@ class ProjectPagerAdapter(
     private val parent: ProjectActivity
 ) :
     FragmentStateAdapter(manager, parent.lifecycle) {
-    val dataFragment =
-        DataFragment(this, parent.project)
+    val dataFragment = DataFragment(this, parent.project)
     val assetFragment = AssetFragment(parent.project)
 
     private var mTabs = arrayListOf(
@@ -126,7 +125,7 @@ class ProjectPagerAdapter(
     open class Tab(
         val fragment: BaseFragment,
         val title: Any,
-        private val parent: ProjectPagerAdapter,
+        protected val parent: ProjectPagerAdapter,
         val closeable: Boolean = true
     ) {
         val position: Int get() = parent.mTabs.indexOf(this)
@@ -140,6 +139,8 @@ class ProjectPagerAdapter(
                     updateIcon()
                 }
             }
+        val isClosed: Boolean
+            get() = position == -1
 
         fun updateIcon() {
             parent.attachTo.first.getTabAt(position)!!.apply {
@@ -166,6 +167,13 @@ class ProjectPagerAdapter(
                 parent.addTab(this)
             }
             parent.parent.view_pager.setCurrentItem(position, true)
+        }
+
+        /**
+         * When an operation is called, it calls this function in case the old performer is closed.
+         */
+        open fun clone(): Tab {
+            return this
         }
 
         override fun equals(other: Any?): Boolean =
