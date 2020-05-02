@@ -9,4 +9,11 @@
         <item>reply</item>
         <item>reply_all</item>
     </string-array>
+
+    <string-array name="project_element_types">
+        <item>String</item>
+    </string-array>
+    <string-array name="project_element_type_values">
+        <item>string</item>
+    </string-array>
 </resources>

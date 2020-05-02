@@ -25,6 +25,7 @@ import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.project_edit.Name
 import kotlin.concurrent.thread
 import kotlin.math.absoluteValue
+import kotlin.reflect.full.declaredMemberProperties
 
 inline fun <T : RecyclerView.ViewHolder> RecyclerView.forEachHolder(l: (T) -> Unit) =
     forEachHolderIndexed<T> { t, _ -> l(t) }
@@ -234,6 +235,7 @@ fun View.hideSoftKeyboard() {
 
 fun String.nameify() = Name(this)
 fun Int.nameify() = Name(this)
+fun combineNames(vararg combination: Any) = Name(combination.toList())
 
 fun alert(error: Exception) {
     thread(name = "virtual") { throw error }
@@ -248,4 +250,9 @@ var MenuItem.enabled
             if (value) null
             else Env.presentActivity.getColorStateList(R.color.colorDisabled)
         this.isEnabled = value
+    }
+
+val BottomAppBar.isUp: Boolean
+    get() {
+        return translationY <= 0
     }

@@ -33,7 +33,7 @@
     <string name="action_close_app">Close App</string>
     <string name="title_unhandled_exception">Unhandled Exception</string>
     <string name="info_unhandled_exception">The logical of the app can not handle this exception, which isn\'t in main
-        thread. So you can ignore it and continue, but I can\'t ensure it will be all right.
+        thread. So you can ignore it and continue, but I can\'t ensure whether it will be all right.
     </string>
     <string name="exception_shared_storage_unreachable">Unable to fetch files in shared storage.</string>
     <string name="action_search">Search</string>
@@ -84,4 +84,13 @@
     <string name="name_copy">Copy</string>
     <string name="name_unnamed">Unnamed</string>
     <string name="action_redo">Redo</string>
+    <string name="name_type">Type</string>
+    <string name="title_new_element">New Element</string>
+    <string name="exception_perform_operation">Failed to perform operation for %s.</string>
+    <string name="operation_list_modifying">List Modifying</string>
+    <string name="operation_varible_changing">Varibing Changing</string>
+    <string name="title_user_element">User Element</string>
+    <string name="info_user_element">These data are defined by user, and may not be used by context.</string>
+    <string name="exception_element_not_supported">Element type %s in %s is unable to be edited.</string>
+    <string name="exception_empty_input">Input must not be empty.</string>
 </resources>

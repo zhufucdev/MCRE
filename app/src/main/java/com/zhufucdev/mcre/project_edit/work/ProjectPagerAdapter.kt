@@ -10,7 +10,9 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.zhufucdev.mcre.R
 import com.zhufucdev.mcre.activity.ProjectActivity
 import com.zhufucdev.mcre.project_edit.fragment.AssetFragment
+import com.zhufucdev.mcre.project_edit.fragment.BaseFragment
 import com.zhufucdev.mcre.project_edit.fragment.DataFragment
+import kotlinx.android.synthetic.main.activity_project.*
 import kotlinx.android.synthetic.main.content_project.*
 
 class ProjectPagerAdapter(
@@ -82,7 +84,7 @@ class ProjectPagerAdapter(
         attachTo.first.tabMode = if (tabs.all { !it.closeable }) TabLayout.MODE_FIXED else TabLayout.MODE_SCROLLABLE
     }
 
-    fun addTab(fragment: Fragment, nameID: Int): Tab {
+    fun addTab(fragment: BaseFragment, nameID: Int): Tab {
         val r = Tab(fragment, nameID, this)
         if (!containsTab(r)) {
             mTabs.add(r)
@@ -116,8 +118,13 @@ class ProjectPagerAdapter(
 
     override fun containsItem(itemId: Long): Boolean = mTabs.any { it.hashCode().toLong() == itemId }
 
+    /**
+     * @constructor
+     * @param title Int or String related to window's title.
+     * @param closeable Whether the window can be closed by user.
+     */
     open class Tab(
-        val fragment: Fragment,
+        val fragment: BaseFragment,
         val title: Any,
         private val parent: ProjectPagerAdapter,
         val closeable: Boolean = true
@@ -155,6 +162,9 @@ class ProjectPagerAdapter(
         }
 
         fun head() {
+            if (position == -1) {
+                parent.addTab(this)
+            }
             parent.parent.view_pager.setCurrentItem(position, true)
         }
 
@@ -166,8 +176,13 @@ class ProjectPagerAdapter(
             result = 31 * result + title.hashCode()
             return result
         }
+
+        init {
+            fragment.tab = this
+        }
     }
 
+    /*
     private inner class DiffCallback(val old: List<Tab>, val new: List<Tab>) : DiffUtil.Callback() {
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
             old[oldItemPosition] == new[newItemPosition]
@@ -179,6 +194,6 @@ class ProjectPagerAdapter(
 
         override fun getNewListSize(): Int = new.size
 
-    }
+    }*/
 }
 

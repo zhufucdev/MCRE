@@ -8,8 +8,10 @@ import com.zhufucdev.mcre.utility.nameify
 import java.util.*
 
 class PackName : StringElement {
-    override val title: Name = R.string.name_unnamed.nameify()
+    override val title: Name = R.string.name_name.nameify()
     override val description: Name = R.string.info_name.nameify()
+    override val type: ElementType
+        get() = ElementType.REQUIRED
 
     constructor() : super() {
         value = Env.formatDate(Date())

@@ -20,8 +20,8 @@ import com.zhufucdev.mcre.utility.*
 import kotlinx.android.synthetic.main.fragment_edit_text.*
 import kotlin.reflect.KProperty0
 
-class TextEditFragment(val itemName: String, val value: KProperty0<StringElement>, project: EditableProject) :
-    BaseFragment(R.layout.fragment_edit_text, project) {
+class TextEditFragment(val itemName: String, override val editing: StringElement, project: EditableProject) :
+    BaseFragment(R.layout.fragment_edit_text, project, editing) {
     private lateinit var render: MCTextRender
     private val isColorsPanelShown get() = colorsPanel?.translationY == cpShowTranslation
     private val cpHideTranslation get() = colorsPanel!!.measuredHeight.toFloat()
@@ -33,7 +33,7 @@ class TextEditFragment(val itemName: String, val value: KProperty0<StringElement
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         item_name.text = getString(R.string.title_edit_what, itemName)
-        edit_text.setText(value.get().value)
+        edit_text.setText(editing.value)
         render = MCTextRender(edit_text)
         render.doRender()
         render.setExceptionListener {
@@ -48,20 +48,20 @@ class TextEditFragment(val itemName: String, val value: KProperty0<StringElement
         render.setRenderListener { before, end ->
             val undoRedo: () -> Unit = {
                 hasUndone = true
-                edit_text.setTextKeepState(value.get().value)
+                render.doRender(editing.value)
             }
             if (hasUndone) {
                 hasUndone = false
                 return@setRenderListener
             }
-            project.operationStack.add(Operation(value.get()::value, before, end))
+            project.operationStack.add(Operation(editing::value, before, end, tab))
                 .setOnUndoneListener(undoRedo)
                 .setOnRedoneListener(undoRedo)
         }
 
         // UI
         edit_text.doAfterTextChanged {
-            value.get().value = edit_text.editableText.toString()
+            editing.value = edit_text.editableText.toString()
         }
         format_recycler_view.apply {
             adapter = colorsAdapter

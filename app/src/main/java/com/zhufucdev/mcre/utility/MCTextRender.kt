@@ -48,7 +48,8 @@ class MCTextRender(private val attachTo: TextView): Destroyable {
     fun doRender(sourceText: String? = null) {
         lastRender = System.currentTimeMillis()
         val rawText = sourceText?.also { attachTo.text = it } ?: attachTo.text
-        mRenderListener?.invoke(lastRenderedContent, rawText.toString())
+        if (rawText != lastRenderedContent)
+            mRenderListener?.invoke(lastRenderedContent, rawText.toString())
         lastRenderedContent = rawText.toString()
         try {
             val selections = rawText.split(TextUtil.END)

@@ -9,12 +9,12 @@ import com.zhufucdev.mcre.project_edit.element.BaseElement
 import kotlinx.android.synthetic.main.simple_item.view.*
 
 class SimpleItemView : FrameLayout {
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attributes: AttributeSet) : this(context, attributes, 0)
-    constructor(context: Context, attributes: AttributeSet, defStyleAttr: Int)
+    constructor(context: Context) : this(context, null)
+    constructor(context: Context, attributes: AttributeSet?) : this(context, attributes, 0)
+    constructor(context: Context, attributes: AttributeSet?, defStyleAttr: Int)
             : this(context, attributes, defStyleAttr, 0)
 
-    constructor(context: Context, attributes: AttributeSet, defStyleAttr: Int, defStyleRes: Int)
+    constructor(context: Context, attributes: AttributeSet?, defStyleAttr: Int, defStyleRes: Int)
             : super(context, attributes, defStyleAttr, defStyleRes) {
         LayoutInflater.from(context).inflate(R.layout.simple_item, this, true)
         val ta = context.obtainStyledAttributes(attributes, R.styleable.SimpleItemView)

@@ -3,10 +3,7 @@ package com.zhufucdev.mcre.project_edit
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.google.gson.stream.JsonWriter
-import com.zhufucdev.mcre.project_edit.element.BaseElement
-import com.zhufucdev.mcre.project_edit.element.Deserializable
-import com.zhufucdev.mcre.project_edit.element.PackDescription
-import com.zhufucdev.mcre.project_edit.element.PackName
+import com.zhufucdev.mcre.project_edit.element.*
 import com.zhufucdev.mcre.project_edit.operation_like.Operation
 import com.zhufucdev.mcre.project_edit.operation_like.UndoRedo
 import java.io.File
@@ -38,7 +35,17 @@ class EditableProject {
             return result
         }
     var file: File? = null
-    private val elements: ArrayList<BaseElement>
+    val elements: ArrayList<BaseElement>
+    fun elementsByType(): Map<ElementType, List<BaseElement>> {
+        val map = hashMapOf<ElementType, List<BaseElement>>()
+        elements.forEach {
+            if (!map.containsKey(it.type)) {
+                map[it.type] = arrayListOf()
+            }
+            (map[it.type]!! as ArrayList).add(it)
+        }
+        return map.toSortedMap(Comparator { o1, o2 -> o1.order - o2.order })
+    }
     val operationStack = OperationStack()
 
     constructor() {

@@ -1,15 +1,22 @@
 package com.zhufucdev.mcre.project_edit.operation_like
 
+import com.zhufucdev.mcre.R
+import com.zhufucdev.mcre.project_edit.Name
+import com.zhufucdev.mcre.project_edit.work.ProjectPagerAdapter
+import com.zhufucdev.mcre.utility.nameify
 import kotlin.reflect.KMutableProperty0
 
-class Operation<T>(private val value: KMutableProperty0<T>, val from: T, val to: T): UndoRedo {
+class Operation<T>(private val value: KMutableProperty0<T>, val from: T, val to: T,
+                   internal var performer: ProjectPagerAdapter.Tab? = null): UndoRedo {
     override fun redo() {
         value.set(to)
+        performer?.head()
         mOnRedoListener?.invoke()
     }
 
     override fun undo() {
         value.set(from)
+        performer?.head()
         mOnUndoListener?.invoke()
     }
 
@@ -23,6 +30,9 @@ class Operation<T>(private val value: KMutableProperty0<T>, val from: T, val to:
         mOnRedoListener = l
         return this
     }
+
+    override val name: Name
+        get() = R.string.operation_varible_changing.nameify()
 
     override fun equals(other: Any?): Boolean = other is Operation<*>
             && other.from == from && other.to == to
